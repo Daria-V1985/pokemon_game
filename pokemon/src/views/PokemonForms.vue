@@ -10,63 +10,8 @@
           :selectedTab="selectedTab"
           @changeTab="changeTab"
         >
-            <div v-if="selectedTab === 'SignUp'">
-              <Input 
-                name="regLogin" 
-                label="Логин" 
-                placeholder="Введите логин"
-                :value="values.regLogin"
-                @update:value="log => setFieldValue('regLogin', log)"
-                :error="showErrors && errors.regLogin ? [errors.regLogin] : []"
-              />
-              <Input 
-                name="pass2" 
-                label="Пароль" 
-                placeholder="Введите пароль"
-                type="password"
-                :value="values.pass2"
-                @update:value="pass => setFieldValue('pass2', pass)"
-                :error="showErrors && errors.pass2 ? [errors.pass2] : []"
-              />
-              <Input 
-                name="agPass" 
-                label="Повторение пароля" 
-                placeholder="Введите пароль еще раз"
-                type="password"
-                :value="values.agPass"
-                @update:value="pass => setFieldValue('agPass', pass)"
-                :error="showErrors && errors.agPass ? [errors.agPass] : []"
-              />
-              <Button 
-                label="Зарегистрироваться"
-                color="primary"
-                type="submit"
-              />
-            </div>
-            <div v-if="selectedTab === 'SignIn'">
-              <Input 
-                name="authLogin" 
-                label="Логин" 
-                placeholder="Введите логин"
-                :value="values.authLogin"
-                @update:value="log => setFieldValue('authLogin', log)"
-                :error="showErrors && errors.authLogin ? [errors.authLogin] : []"
-              />
-              <Input 
-                name="pass1" 
-                label="Пароль" 
-                placeholder="Введите пароль"
-                type="password"
-                :value="values.pass1"
-                @update:value="pass => setFieldValue('pass1', pass)"
-                :error="showErrors && errors.pass1 ? [errors.pass1] : []" 
-              /> 
-              <Button 
-                label="Войти"
-                color="primary"
-                type="submit"
-              /> 
-            </div>
+          <router-link to="/signup">Регистрация</router-link>
+          <router-link to="/signin">Вход</router-link>
         </Tabs> 
       </Form>
     </section>
@@ -79,8 +24,6 @@ import { useRouter } from 'vue-router';
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
 
-import Button from "@/components/Button.vue";
-import Input from "@/components/Input.vue";
 import Tabs from "@/components/Tabs.vue";
 import Logo from "@/components/Logo.vue";
 
@@ -93,7 +36,7 @@ const selectedTab = ref("SignIn");
 const showErrors = ref(false);
 const router = useRouter();
 
-const signInSchema = yup.object({  // Создаёт объект схемы валидации.
+const signInSchema = yup.object({  
   authLogin: yup.string().required("Логин обязателен!"),
   pass1: yup.string().required("Пароль обязателен!"),
 });
@@ -106,7 +49,7 @@ const signUpSchema = yup.object({
     .required("Требуется подтверждение пароля!"),
 });
 
-const { handleSubmit, values, errors, resetForm, setFieldValue } = useForm({
+const { handleSubmit, resetForm } = useForm({
   validationSchema: computed(() => selectedTab.value === "SignUp" ? signUpSchema : signInSchema),
   initialValues: {
     regLogin: "",
@@ -144,9 +87,7 @@ const onSubmit = handleSubmit(async (values) => {
     }
     }
   }
-  //console.log("Success:", values);
 }, () => {
-  //console.error("Validation errors:", errors);
   showErrors.value = true;
 });
 
