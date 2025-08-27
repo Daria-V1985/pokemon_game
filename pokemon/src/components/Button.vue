@@ -3,49 +3,39 @@
     :class="['btn', `btn_${ color }`, { 'btn_rounded': rounded }, { 'btn_outlined': outlined }, { 'btn_large': size === 'large' }]"
     :disabled="disabled"
     @click="clickOnButton">
-    <span v-if="label">
+    <slot>
       {{ label }}
-    </span>
+    </slot>
   </button>
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits, withDefaults } from "vue";
 
-defineProps({
-  label: {
-    type: String,
-    default: "Button"
-  },
-  color: {
-    type: String,
-    default: "primary"
-  },
-  disabled: {
-    type: Boolean,
-    required: false
-  },
-  rounded: {
-    type: Boolean,
-    required: false
-  },
-  outlined: {
-    type: Boolean,
-    required: false
-  },
-  icon: {
-    type: String,
-    required: false
-  },
-  size: {
-    type: String,
-    default: "normal"
-  }
-});
+interface btnProps {
+  label?: string;
+  color?: string;
+  disabled?: boolean,
+  rounded?: boolean,
+  outlined?: boolean,
+  size?: "normal" | "large",
+}
 
-const emit = defineEmits(["click"]); 
+withDefaults(defineProps<btnProps>(), {
+  label: "Button",
+  color: "primary",
+  disabled: false,
+  rounded: false,
+  outlined: false,
+  size: "normal",
+})
+
+const emit = defineEmits<{
+  click: [],
+}>();
+
 const clickOnButton = () => {
-  emit("click")
+  emit("click");
 }
 </script>
 
@@ -103,8 +93,8 @@ const clickOnButton = () => {
     }
   }
   &_danger {
-    background: var(--danger);
-    border: 1px solid var(--danger);
+    background: $error;
+    border: 1px solid $error;
     &:enabled:hover {
       background: var(--danger-hover);
     }

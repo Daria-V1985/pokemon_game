@@ -12,10 +12,11 @@ $text: #000000d8;
 $primary: #365fac;
 $white: #fff;
 $neutral: #ccc;
-$error: rgba(255, 30, 0, 0.886);
+$error: #d92c46;
 $placeholder: #0000003c;
 $background: #f5f7fa;
 $coin: #facc15;
+$success: #00C48C;
 
 // Mixins
 
@@ -31,6 +32,48 @@ $coin: #facc15;
   border: 1px solid $primary;
   border-radius: 2px;
   color: $primary;
+}
+
+@mixin btn-danger {
+  background: $error;
+  border: 1px solid $error;
+  border-radius: 2px;
+  color: $white;
+}
+
+@mixin btn-danger-hover {
+  background: $white;
+  border: 1px solid $error;
+  border-radius: 2px;
+  color: $error;
+}
+
+@mixin btn-success {
+  background: $success;
+  border: 1px solid $success;
+  border-radius: 2px;
+  color: $white;
+}
+
+@mixin btn-success-hover {
+  background: $white;
+  border: 1px solid $success;
+  border-radius: 2px;
+  color: $success;
+}
+
+@mixin btn-warning {
+  background: $coin;
+  border: 1px solid $coin;
+  border-radius: 2px;
+  color: $white;
+}
+
+@mixin btn-warning-hover {
+  background: $white;
+  border: 1px solid $coin;
+  border-radius: 2px;
+  color: $coin;
 }
 
 @mixin design-text {

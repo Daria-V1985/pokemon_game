@@ -5,13 +5,13 @@
       :name="name"
       :type="type"
       :placeholder="placeholder"
-      :value="props.value"
+      :value="value"
       @input="updateValue"
       :class="{ 'input-error': error && error.length > 0 }"
     />
     <label :for="name" class="input-label">
       <span class="star">*</span>
-      {{ props.label }}
+      {{ label }}
     </label>
     <div class="form-error">
       <div class="form-error__message" v-for="(message, index) in error" :key="index">
@@ -22,43 +22,32 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from "vue";
+import { defineProps, defineEmits, withDefaults } from "vue";
 
-const props = defineProps({
-  error: {
-    type: Array as () => string[],
-    required: false
-  },
-  value: {
-    type: String,
-    default: ""
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  type: {
-    type: String,
-    default: "text"
-  },
-  placeholder: {
-    type: String,
-    required: true
-  },
-  label: {
-    type: String,
-    required: true
-  },
-  width: {
-    type: String,
-    default: "352px"
-  }
+interface inputProps {
+  error?: string[];
+  value?: string;
+  name: string,
+  type?: string,
+  placeholder: string,
+  label: string,
+  width?: string,
+}
+
+withDefaults(defineProps<inputProps>(), {
+  error: () => [],
+  value: "",
+  type: "",
+  width: "352px",
 })
 
-const emit = defineEmits(["update:value"])
+const emit = defineEmits<{
+  change: [id: number]
+  'update:value': [value: string]
+}>();
+
 const updateValue = (e: Event) => {
   const target = e.target as HTMLInputElement;
-  //console.log("Emitting value:", target.value);
   emit("update:value", target.value);
 }
 </script>
