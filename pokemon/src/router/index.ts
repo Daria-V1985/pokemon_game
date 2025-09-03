@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import SignUp from '@/views/SignUp.vue';
-import SignIn from '@/views/SignIn.vue';
+import SignUp from '@/components/auth/SignUp.vue';
+import SignIn from '@/components/auth/SignIn.vue';
 import PokemonForms from "../views/PokemonForms.vue";
 import MainPage from "@/views/MainPage.vue";
 
@@ -11,12 +11,12 @@ const routes: Array<RouteRecordRaw> = [
     component: PokemonForms,
   },
   {
-    path: '/signup',
+    path: '/auth/signup',
     name: 'SignUp',
     component: SignUp,
   },
   {
-    path: '/signin',
+    path: '/auth/signin',
     name: 'SignIn',
     component: SignIn,
   },
