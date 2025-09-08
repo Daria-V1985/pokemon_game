@@ -76,7 +76,6 @@ function toggle() {
 }
 
 .content-item {
-  text-transform: uppercase;
   overflow: hidden;
   transition: all 0.25s ease;
 }
