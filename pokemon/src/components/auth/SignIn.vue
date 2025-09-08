@@ -58,15 +58,16 @@ const { handleSubmit, values, errors, setFieldValue } = useForm({
 
 const onSubmit = handleSubmit(async (values) => {
   try {
-      const data = await authStore.loginUser({ 
-        login: values.authLogin, 
-        password: values.pass1 
-      });
-      alert(`SignIn success!\nAuthLogin: ${data.authLogin}`);
-      router.push('/main');
-    } catch {
-      showErrors.value = true;
-    }
+    await authStore.loginUser({ 
+      login: values.authLogin, 
+      password: values.pass1 
+    });
+    alert(`SignIn success!\nAuthLogin: ${authStore.user?.authLogin ?? 'нет данных'}`);
+    console.log('User after login:', authStore.user);
+    router.push('/main');
+  } catch {
+    showErrors.value = true;
+  }
 }, () => {
   showErrors.value = true;
 });

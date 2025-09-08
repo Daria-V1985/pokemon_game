@@ -1,76 +1,55 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-    const user = ref<{ authLogin: string } | null>(null);
-    const error = ref<string | null>(null);
-    const loading = ref(false);
+  const user = ref<{ authLogin: string } | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-    const isAuth = computed(() => !!user.value);
+  const isAuth = computed(() => !!user.value);
 
-    function loadUserFromStorage() {
-    const stored = localStorage.getItem('authUser')
-    if (stored) {
-      try {
-        user.value = JSON.parse(stored)
-      } catch {
-        localStorage.removeItem('authUser')
-      }
+  function loadUserFromStorage() {
+    const stored = localStorage.getItem('authUser');
+    user.value = stored ? JSON.parse(stored) : null;
+  }
+
+  watch(user, (newUser) => {
+    if (newUser) {
+      localStorage.setItem('authUser', JSON.stringify(newUser));
+    } else {
+      localStorage.removeItem('authUser');
     }
-  }
+  }, { immediate: true });
 
-  function saveUserToStorage(userData: object) {
-    console.log('Saving to localStorage:', userData);
-    const serialized = JSON.stringify(userData);
-    console.log('Serialized:', serialized);
-    localStorage.setItem('authUser', JSON.stringify(userData));
-    console.log('localStorage after save:', localStorage.getItem('authUser'));
-  }
-
-    async function loginUser(cred: { login: string; password: string }) {
+  async function loginUser(cred: { login: string; password: string }) {
+    if (!cred.login || !cred.password) {
+      throw new Error('Логин и пароль обязательны');
+    }
     loading.value = true;
-    error.value = null;
     try {
-      const response = await fetch('https://9d6066f5473655c8.mokky.dev/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cred),
-      });
-
-      if (!response.ok) {
-        throw new Error('Ошибка авторизации');
-      }
-
-      const data = await response.json();
-      user.value = { authLogin: data.authLogin };
-      saveUserToStorage(user.value);
-      return data;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      user.value = { authLogin: cred.login };
     }
-    catch (err: any) { 
-      error.value = err.message || 'Неизвестная ошибка';
-      throw err;
-    } 
+    catch (e: any) {
+      error.value = e.message || 'Ошибка авторизации';
+      user.value = null;
+    }
     finally {
       loading.value = false;
     }
   }
 
-  loadUserFromStorage();
-
   function logout() {
     user.value = null;
-    error.value = null;
-    localStorage.removeItem('authUser');
   }
 
   return { 
     user, 
-    error, 
-    loading, 
     isAuth,
-    loginUser, 
-    logout 
-  }
+    loginUser,
+    loadUserFromStorage,
+    loading, 
+    logout,
+    error
+  };
 })
