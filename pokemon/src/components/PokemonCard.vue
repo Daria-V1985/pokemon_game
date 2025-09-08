@@ -10,13 +10,13 @@
       <img src="../assets/image/my-pokemon.png" alt="Покемон" />
     </div>
     <div class="card__info card-info">
-      <div class="card-info__row weight">
-        <span class="weight__label">Вес</span>
-        <span class="weight__value">12 кг</span>
+      <div class="card-info__row">
+        <span class="card-info__row-label">Вес</span>
+        <span class="card-info__row-value">12 кг</span>
       </div>
-      <div class="card-info__row money">
-        <span class="money__label">Денег/сек</span>
-        <span class="money__value">1.1</span>
+      <div class="card-info__row">
+        <span class="card-info__row-label">Денег/сек</span>
+        <span class="card-info__row-value">1.1</span>
       </div>
     </div>
   </article>
@@ -41,6 +41,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
   &__title {
     font-size: 1.1rem;
     margin: 0;
@@ -60,34 +61,30 @@
   &__image {
     display: flex;
     justify-content: center;
-
     img {
-      width: 80px;
-      height: 80px;
-      image-rendering: pixelated; // для пиксельной графики
+      width: 140px;
+      height: 140px;
     }
   }
 }
 
-  .card-info {
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  &__row {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 600;
-      font-size: 0.95rem;
-
-      .label {
-        color: #222;
-      }
-
-      .value {
-        color: #222;
-      }
+    justify-content: space-between;
+    font-size: 0.95rem;
+    &-label {
+      color: $text;
+      font-weight: 700;
+    }
+    &-value {
+      color: $text;
+      font-weight: 500;
     }
   }
 }
+
 </style>
