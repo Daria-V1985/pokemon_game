@@ -41,8 +41,6 @@ const showErrors = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
 
-console.log('Is authenticated:', authStore.isAuth);
-
 const signInSchema = yup.object({  
   authLogin: yup.string().required("Логин обязателен!"),
   pass1: yup.string().required("Пароль обязателен!"),
@@ -63,7 +61,6 @@ const onSubmit = handleSubmit(async (values) => {
       password: values.pass1 
     });
     alert(`SignIn success!\nAuthLogin: ${authStore.user?.authLogin ?? 'нет данных'}`);
-    console.log('User after login:', authStore.user);
     router.push('/main');
   } catch {
     showErrors.value = true;
@@ -73,5 +70,3 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 </script>
-
-<style lang="scss" scoped></style>

@@ -14,7 +14,11 @@ import PokemonCard from './PokemonCard.vue';
 
 .pokemons {
   &__cards {
-    margin: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    margin: 16px auto;
+    column-gap: 6px;
+    row-gap: 12px;
   }
 }
 </style>
