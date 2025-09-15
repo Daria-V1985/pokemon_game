@@ -30,8 +30,8 @@ export const useAuthStore = defineStore('auth', () => {
       await new Promise(resolve => setTimeout(resolve, 500));
       user.value = { authLogin: cred.login };
     }
-    catch (e: any) {
-      error.value = e.message || 'Ошибка авторизации';
+    catch (e: unknown) {
+      error.value = 'Ошибка авторизации';
       user.value = null;
     }
     finally {

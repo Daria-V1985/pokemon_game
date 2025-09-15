@@ -1,6 +1,5 @@
 <template>
   <div class="login">
-    <img class="login__icon" src="../assets/image/icon-money.png" alt="Login Icon" />
     <h2 class="login__name">{{ authLogin || 'Гость' }}</h2>
   </div>
 </template>

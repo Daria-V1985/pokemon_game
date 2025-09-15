@@ -1,104 +1,40 @@
 <template>
-  <article v-for="(pokemon, index) in pokemons"
-    :key="index"
-    class="pokemons__card card"
-  >
+  <article class="pokemons__card card">
     <div class="card__header">
-      <h3 class="card__title">{{ pokemon.name }}</h3>
+      <h3 class="card__title">{{ props.name }}</h3>
       <div class="card__settings">
         <img src="../assets/image/svg/setting.svg" alt="Настройка покемона">
       </div>
     </div>
     <div class="card__image">
-      <img :src="pokemon.image" alt="Покемон" />
+      <img :src="props.image" :alt="props.name"/>
     </div>
     <div class="card__info card-info">
       <div class="card-info__row">
         <span class="card-info__row-label">Вес</span>
-        <span class="card-info__row-value">{{ pokemon.weight }}</span>
+        <span class="card-info__row-value">{{ props.weight }} кг</span>
       </div>
       <div class="card-info__row">
         <span class="card-info__row-label">Денег/сек</span>
-        <span class="card-info__row-value">{{ pokemon.money }}</span>
+        <span class="card-info__row-value">{{ props.money }}</span>
       </div>
     </div>
   </article>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { defineProps } from 'vue';
 
 interface Pokemon {
+  id: number,
   name: string,
   image: string,
   weight: number,
   money: number,
 }
 
-const getPokemons = (): Pokemon[] => [
-  {
-    name: 'clefairy',
-    image: '../assets/image/my-pokemon.png',
-    weight: 12,
-    money: 1.1,
-  },
-  {
-    name: 'clefairy',
-    image: '../assets/image/my-pokemon.png',
-    weight: 12,
-    money: 1.1,
-  },
-  {
-    name: 'clefairy',
-    image: '../assets/image/my-pokemon.png',
-    weight: 12,
-    money: 1.1,
-  },
-  {
-    name: 'clefairy',
-    image: '../assets/image/my-pokemon.png',
-    weight: 12,
-    money: 1.1,
-  },
-  {
-    name: 'clefairy',
-    image: '../assets/image/my-pokemon.png',
-    weight: 12,
-    money: 1.1,
-  },
-  {
-    name: 'clefairy',
-    image: '../assets/image/my-pokemon.png',
-    weight: 12,
-    money: 1.1,
-  },
-]
+const props = defineProps<Pokemon>();
 
-const pokemons = ref<Pokemon[]>([]);
-
-const savePokemons = (): void => {
-  localStorage.setItem('pokemons', JSON.stringify(pokemons.value));
-}
-
-const loadPokemons = (): void => {
-  const saved = localStorage.getItem('pokemons');
-  if (saved) {
-    try {
-      pokemons.value = JSON.parse(saved) as Pokemon[];
-    } catch (err) {
-      console.error('Ошибка парсинга данных из localStorage', err);
-      pokemons.value = getPokemons();
-      savePokemons();
-    }
-  } else {
-    pokemons.value = getPokemons();
-    savePokemons();
-  }
-}
-
-onMounted(() => {
-  loadPokemons();
-});
 </script>
 
 <style lang="scss" scoped>

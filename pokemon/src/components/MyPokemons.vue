@@ -10,7 +10,5 @@ import CardList from './CardList.vue';
 <style lang="scss" scoped>
 @import "../assets/scss/_variables.scss";
 
-.pokemons {
 
-}
 </style>
