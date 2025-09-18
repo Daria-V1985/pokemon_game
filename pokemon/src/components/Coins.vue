@@ -3,7 +3,7 @@
     <div class="coins__count count">
       <div class="count__body">
         <button class="count__button btn-minus" @click="onDecrement">-</button>
-        <div class="count__num">{{ coinsStore.count.toLocaleString() }}</div>
+        <div class="count__num">{{ coinsStore.coins.toLocaleString() }}</div>
         <button class="count__button btn-plus" @click="onIncrement">+</button>
       </div>
     </div>
@@ -11,8 +11,11 @@
 </template>
 
 <script lang="ts" setup>
+import { onMounted } from 'vue';
+import { useAuthStore } from '@/stores/AuthStore';
 import { useCoinsStore } from '@/stores/CoinsStore';
 
+const authStore = useAuthStore();
 const coinsStore = useCoinsStore();
 
 function onIncrement() {
@@ -22,6 +25,14 @@ function onIncrement() {
 function onDecrement() {
   coinsStore.decrement();
 }
+
+onMounted(() => {
+  if (authStore.isAuth && authStore.user?.authLogin) {
+    coinsStore.init(authStore.user.authLogin);
+  } else {
+    console.warn('Пользователь не авторизован — монеты не загружены');
+  }
+});
 
 </script>
 

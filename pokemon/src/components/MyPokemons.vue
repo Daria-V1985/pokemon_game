@@ -1,9 +1,9 @@
 <template>
-  <CardList />
+  <PokemonCardList />
 </template>
 
 <script lang="ts" setup>
-import CardList from './CardList.vue';
+import PokemonCardList from './PokemonCardList.vue';
 
 </script>
 

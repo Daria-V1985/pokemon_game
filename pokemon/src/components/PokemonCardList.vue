@@ -11,11 +11,13 @@
       @click="openSettings(pokemon.id)"
     />
   </div>
+  <PokemonModal />
 </template>
 
 <script lang="ts" setup>
 import PokemonCard from './PokemonCard.vue';
 import { ref, onMounted } from "vue";
+import PokemonModal from './PokemonModal.vue';
 
 interface Pokemon {
   id: number,
@@ -30,11 +32,11 @@ const pokemons = ref<Pokemon[]>([]);
 
 const loadPokemons = async (): Promise<void> => {
   try {
-    const response = await fetch(API_URL)
-    const data: Pokemon[] = await response.json()
-    pokemons.value = data
+    const response = await fetch(API_URL);
+    const data: Pokemon[] = await response.json();
+    pokemons.value = data;
   } catch (err) {
-    console.error('Ошибка загрузки данных из API:', err)
+    console.error('Ошибка загрузки данных из API:', err);
   }
 }
 

@@ -2,9 +2,9 @@
   <article class="pokemons__card card">
     <div class="card__header">
       <h3 class="card__title">{{ props.name }}</h3>
-      <div class="card__settings">
+      <button class="card__settings" @click="$emit('click', props.id)">
         <img src="../assets/image/svg/setting.svg" alt="Настройка покемона">
-      </div>
+      </button>
     </div>
     <div class="card__image">
       <img :src="props.image" :alt="props.name"/>
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 interface Pokemon {
   id: number,
@@ -34,6 +34,9 @@ interface Pokemon {
 }
 
 const props = defineProps<Pokemon>();
+defineEmits<{
+  'click': [id: number]
+}>();
 
 </script>
 

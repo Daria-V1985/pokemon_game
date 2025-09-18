@@ -1,41 +1,51 @@
 import { defineStore } from 'pinia';
+import { ref, watch } from 'vue';
 
-function getStorageUserCoins(userId: string) {
-  return `coins_${userId}`;
-}
+export const useCoinsStore = defineStore('coins', () => {
+  const coins = ref(0);
+  const authLogin = ref<string | null>(null)
 
-export const useCoinsStore = defineStore('coins', {
-  state: () => ({
-    userId: '',
-    count: 0, 
-  }),
-  actions: {
-    init(userId: string) {
-      this.userId = userId;
-      const saved = localStorage.getItem(getStorageUserCoins(userId));
-      if (saved !== null) {
-        const parsed = parseInt(saved, 10);
-        this.count = isNaN(parsed) ? 0 : parsed;
-      } else {
-        this.count = 1000000; // дефолтное значение, если нет сохранения
-        this.save();
-      }
-    },
-    increment() {
-      this.count++;
-      this.save();
-    },
-    decrement() {
-      if (this.count > 0) {
-        this.count--;
-        this.save();
-      }
-    },
-    save() {
-      if (this.userId) {
-        localStorage.setItem(getStorageUserCoins(this.userId), this.count.toString());
-      }
-    },
-  },
+  function init(authLoginParam: string) {
+    authLogin.value = authLoginParam;
+    loadCoinsFromStorage();
+  }
 
+  function loadCoinsFromStorage() {
+    if (!authLogin.value) return; 
+    try {
+      const stored = localStorage.getItem(`coins_${authLogin.value}`);
+      coins.value = stored ? parseInt(stored, 10) : 0;
+    } catch (err) {
+      console.error('Ошибка загрузки монет из localStorage:', err);
+      coins.value = 0;
+    }
+  }
+
+  watch(coins, (newCoins) => {
+    if (authLogin.value && newCoins >= 0) {
+      localStorage.setItem(`coins_${authLogin.value}`, newCoins.toString());
+    }
+  });
+
+  function increment() {
+    coins.value++;
+  }
+
+  function decrement() {
+    if (coins.value > 0) {
+      coins.value--;
+    }
+  }
+
+  function reset() {
+    coins.value = 0;
+  }
+
+  return {
+    coins,
+    init,
+    increment,
+    decrement,
+    reset,
+  };
 });

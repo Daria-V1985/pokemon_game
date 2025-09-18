@@ -50,6 +50,6 @@ export const useAuthStore = defineStore('auth', () => {
     loadUserFromStorage,
     loading, 
     logout,
-    error
+    error,
   };
 })
