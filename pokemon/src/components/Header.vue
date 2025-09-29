@@ -3,6 +3,7 @@
     <div class="header__container container">
       <div class="header__body">
         <Logo />
+        <UserLogin />
         <Coins />
       </div>
     </div>
@@ -11,7 +12,8 @@
 
 <script lang="ts" setup>
 import Logo from '@/components/Logo.vue';
-import Coins from '@/components/UserLogin.vue';
+import UserLogin from '@/components/UserLogin.vue';
+import Coins from '@/components/Coins.vue';
 </script>
 
 <style lang="scss" scoped>

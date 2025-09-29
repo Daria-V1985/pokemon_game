@@ -1,16 +1,14 @@
 <template>
-  <CardList />
+  <PokemonCardList />
 </template>
 
 <script lang="ts" setup>
-import CardList from './CardList.vue';
+import PokemonCardList from './PokemonCardList.vue';
 
 </script>
 
 <style lang="scss" scoped>
 @import "../assets/scss/_variables.scss";
 
-.pokemons {
 
-}
 </style>
