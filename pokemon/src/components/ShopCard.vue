@@ -1,5 +1,5 @@
 <template>
-  <div class="shop-list__item">
+  <article class="shop-list__item">
     <div class="shop-list__item-info">
       <div class="shop-list__item-img">
         <img :src="props.image" :alt="props.title">
@@ -15,7 +15,7 @@
     > 
       Купить за {{ props.buy }}
     </Button>
-  </div>
+  </article>
 </template>
 
 <script lang="ts" setup>

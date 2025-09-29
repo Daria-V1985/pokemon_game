@@ -52,13 +52,6 @@ const currentComponent = computed(() => {
   align-items: center;
   min-height: 100vh;
   padding: 40px 20px;
-  &__logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-	}
 	&__container {
     background: white;
     border-radius: 12px;

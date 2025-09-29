@@ -11,7 +11,11 @@
       @click="openSettings(pokemon.id)"
     />
   </div>
-  <PokemonModal />
+  <PokemonModal 
+    v-model:modelValue="showModal" 
+    :pokemon="selectedPokemon"
+    @close="closeSettings"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -29,8 +33,10 @@ interface Pokemon {
 
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/pokemons';
 const pokemons = ref<Pokemon[]>([]);
+const showModal = ref(false);
+const selectedPokemon = ref<Pokemon | null>(null);
 
-const loadPokemons = async (): Promise<void> => {
+const loadPokemons = async () => {
   try {
     const response = await fetch(API_URL);
     const data: Pokemon[] = await response.json();
@@ -41,9 +47,19 @@ const loadPokemons = async (): Promise<void> => {
 }
 
 const openSettings = (id: number): void => {
-  const pokemon = pokemons.value.find(p => p.id === id)
-  console.log('Открыть настройки для покемона:', pokemon)
+  const pokemon = pokemons.value.find(pokemon => pokemon.id === id)
+  if (pokemon) {
+    selectedPokemon.value = pokemon;
+    showModal.value = true;
+  } else {
+    console.warn(`Покемон с id ${id} не найден`);
+  }
 }
+
+const closeSettings = () => {
+  showModal.value = false;
+  selectedPokemon.value = null;
+};
 
 onMounted(() => {
   loadPokemons();

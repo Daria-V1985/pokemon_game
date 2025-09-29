@@ -3,6 +3,8 @@ import SignUp from '@/components/auth/SignUp.vue';
 import SignIn from '@/components/auth/SignIn.vue';
 import PokemonForms from "../views/PokemonForms.vue";
 import MainPage from "@/views/MainPage.vue";
+import Feed from "@/components/popup/Feed.vue";
+import Statistics from "@/components/popup/Statistics.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,6 +26,16 @@ const routes: Array<RouteRecordRaw> = [
     path: "/main",
     name: "main",
     component: MainPage,
+  },
+  {
+    path: '/popup/feed',
+    name: 'Feed',
+    component: Feed,
+  },
+  {
+    path: '/popup/statistics',
+    name: 'Statistics',
+    component: Statistics,
   },
 ];
 
