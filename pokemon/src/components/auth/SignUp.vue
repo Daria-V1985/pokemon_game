@@ -9,13 +9,13 @@
       :error="showErrors && errors.regLogin ? [errors.regLogin] : []"
     />
     <Input 
-      name="pass2" 
+      name="regPass" 
       label="Пароль" 
       placeholder="Введите пароль"
       type="password"
-      :value="values.pass2"
-      @update:value="pass => setFieldValue('pass2', pass)"
-      :error="showErrors && errors.pass2 ? [errors.pass2] : []"
+      :value="values.regPass"
+      @update:value="pass => setFieldValue('regPass', pass)"
+      :error="showErrors && errors.regPass ? [errors.regPass] : []"
     />
     <Input 
       name="agPass" 
@@ -29,8 +29,9 @@
     <Button
       color="primary"
       type="submit"
+      :disabled="regStore.loading"
     >
-      Зарегистрироваться
+      {{ regStore.loading ? 'Регистрация...' : 'Зарегистрироваться' }}
     </Button>
   </Form>
 </template>
@@ -40,16 +41,20 @@ import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
 
 import { ref } from "vue";
+import { useRouter } from 'vue-router';
+import { useRegStore } from '@/stores/RegStore'
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
 
 const showErrors = ref(false);
+const router = useRouter();
+const regStore = useRegStore();
 
 const signUpSchema = yup.object({
   regLogin: yup.string().required("Логин обязателен!"),
-  pass2: yup.string().required("Пароль обязателен!").min(8, "Пароль должен быть не менее 8 символов"),
+  regPass: yup.string().required("Пароль обязателен!").min(8, "Пароль должен быть не менее 8 символов"),
   agPass: yup.string()
-    .oneOf([yup.ref("pass2")], "Пароли не совпадают!") 
+    .oneOf([yup.ref("regPass")], "Пароли не совпадают!") 
     .required("Требуется подтверждение пароля!"),
 });
 
@@ -57,13 +62,23 @@ const { handleSubmit, values, errors, setFieldValue } = useForm({
   validationSchema: signUpSchema,
   initialValues: {
     regLogin: "",
-    pass2: "",
+    regPass: "",
     agPass: "",
   },
 });
 
 const onSubmit = handleSubmit(async (values) => {
-  alert(`SignUp success!\nLogin: ${values.regLogin}`);
+  try {
+    await regStore.registerUser({ 
+      login: values.regLogin, 
+      password: values.regPass,
+      agPass: values.agPass 
+    });
+    alert('Регистрация успешна! Перейдите на вкладку "Вход"');
+    router.push('/');
+  } catch {
+    showErrors.value = true;
+  }
 }, () => {
   showErrors.value = true;
 });

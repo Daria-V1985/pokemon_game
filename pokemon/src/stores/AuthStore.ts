@@ -19,13 +19,14 @@ export const useAuthStore = defineStore('auth', () => {
     } else {
       localStorage.removeItem('authUser');
     }
-  }, { immediate: true });
+  });
 
   async function loginUser(cred: { login: string; password: string }) {
     if (!cred.login || !cred.password) {
       throw new Error('Логин и пароль обязательны');
     }
     loading.value = true;
+    error.value = null;
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       user.value = { authLogin: cred.login };

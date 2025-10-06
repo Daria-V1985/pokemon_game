@@ -94,15 +94,18 @@ import Button from '../Button.vue';
   align-items: center;
   margin-bottom: 36px;
   &__btn {
+    width: 40%;
     padding: 4px 9px;
   }
 }
 
 .search {
   &__form {
+    display: flex;
+    gap: 12px;
   }
   &__input {
-    width: 241px;
+    width: 294px;
     padding: 7px;
     &::placeholder {
     }
