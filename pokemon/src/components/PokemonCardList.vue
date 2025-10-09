@@ -29,6 +29,8 @@ interface Pokemon {
   image: string,
   weight: number,
   money: number,
+  earned: number,
+  age: string,
 }
 
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/pokemons';
