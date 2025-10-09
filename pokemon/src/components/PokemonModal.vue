@@ -1,10 +1,10 @@
 <template>
-  <section class="popup" v-if="modelValue" @click="closeModal">
+  <section class="popup" v-if="modelValue" @click.self="closeModal">
     <div class="popup__inner" @click.stop>
       <div :class="['popup__body', { 'open': showPopup }]">
         <div class="popup__container">
           <div class="popup__header popup-header">
-            <h5 class="popup-header__title">Управление покемоном clefairy</h5>
+            <h5 class="popup-header__title">Управление покемоном {{ pokemon?.name || 'неизвестным' }}</h5>
             <div class="popup-header__close" @click="closeModal">&#10006;</div> 
           </div>
           <Tabs 
@@ -13,10 +13,10 @@
             :selectedTab="selectedTab"
             @changeTab="changeTab"
           >
-            <component :is="currentComponent" />
+            <component :is="currentComponent" :pokemon="pokemon"/>
           </Tabs>
           <div class="popup__footer">
-            <Button>
+            <Button @click="closeModal">
               Закрыть
             </Button>
           </div>
@@ -27,17 +27,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineProps, defineEmits, onMounted, watch} from "vue";
+import { ref, computed, defineProps, defineEmits, onMounted, watch } from "vue";
 
 import Tabs from "@/components/Tabs.vue";
 import Feed from "@/components/popup/Feed.vue";
 import Statistics from "@/components/popup/Statistics.vue";
 import Button from "./Button.vue";
-
-interface Popup {
-  modelValue: boolean; 
-  pokemon: Pokemon | null,
-}
 
 interface Pokemon {
   id: number,
@@ -45,6 +40,13 @@ interface Pokemon {
   image: string,
   weight: number,
   money: number,
+  earned: number,
+  age: string,
+}
+
+interface Popup {
+  modelValue: boolean; 
+  pokemon: Pokemon | null,
 }
 
 const props = defineProps<Popup>();
@@ -107,9 +109,11 @@ const closeModal = () => {
   cursor: pointer;
   overflow-y: auto;
   pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   &__inner {
     min-width: 572px;
-    min-height: 100%;
     display: table;
     padding: 15px 20px;
     display: flex;
@@ -125,7 +129,6 @@ const closeModal = () => {
     width: 100%;
     border-radius: 4px;
     cursor: default;
-    transition: all 0.45s ease;
   }
   &__container {
     padding: 10px 24px;

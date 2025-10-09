@@ -9,13 +9,13 @@
       :error="showErrors && errors.authLogin ? [errors.authLogin] : []"
     />
     <Input 
-      name="pass1" 
+      name="password" 
       label="Пароль" 
       placeholder="Введите пароль"
       type="password"
-      :value="values.pass1"
-      @update:value="pass => setFieldValue('pass1', pass)"
-      :error="showErrors && errors.pass1 ? [errors.pass1] : []" 
+      :value="values.password"
+      @update:value="pass => setFieldValue('password', pass)"
+      :error="showErrors && errors.password ? [errors.password] : []" 
     />
     <Button
       color="primary"
@@ -31,7 +31,7 @@
 import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
 
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/AuthStore'
 import { useForm } from "vee-validate";
@@ -43,24 +43,28 @@ const authStore = useAuthStore();
 
 const signInSchema = yup.object({  
   authLogin: yup.string().required("Логин обязателен!"),
-  pass1: yup.string().required("Пароль обязателен!"),
+  password: yup.string().required("Пароль обязателен!"),
 });
 
 const { handleSubmit, values, errors, setFieldValue } = useForm({
   validationSchema: signInSchema,
   initialValues: {
     authLogin: "",
-    pass1: "",
+    password: "",
   },
 });
+
+onMounted(() => {
+  console.log('SignIn компонент смонтирован');
+})
 
 const onSubmit = handleSubmit(async (values) => {
   try {
     await authStore.loginUser({ 
       login: values.authLogin, 
-      password: values.pass1 
+      password: values.password 
     });
-    alert(`SignIn success!\nAuthLogin: ${authStore.user?.authLogin ?? 'нет данных'}`);
+    alert(`Авторизация успешна!\nПользователь: ${authStore.user?.authLogin ?? 'нет данных'}`);
     router.push('/main');
   } catch {
     showErrors.value = true;
