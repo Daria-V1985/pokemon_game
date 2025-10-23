@@ -1,6 +1,8 @@
 <template>
   <PokemonInfo :pokemon="pokemon" />
-  <PokemonCtrls />
+  <PokemonCtrls 
+    :pokemon="pokemon"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -22,4 +24,3 @@ defineProps<{
   pokemon: Pokemon | null;
 }>();
 </script>
-
