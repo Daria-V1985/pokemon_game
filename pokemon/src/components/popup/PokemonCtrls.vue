@@ -6,23 +6,14 @@
       type="submit">
       Удалить покемона
     </Button>
-    <div class="static-ctrl__search search">
-      <form class="search__form" action="#">
-        <input class="search__input" placeholder="Псевдоним покемона">
-        <Button 
-          class="static-ctrl__btn"
-          color="primary"
-          type="submit">
-          Сохранить
-        </Button>
-      </form>
-    </div>
+    <SearchForm />
   </div>
 </template>
 
 <script lang="ts" setup>
 //import { ref, onMounted } from 'vue';
 import Button from '../Button.vue';
+import SearchForm from './SearchForm.vue';
 </script>
 
 <style lang="scss" scoped>
@@ -40,16 +31,4 @@ import Button from '../Button.vue';
   }
 }
 
-.search {
-  &__form {
-    display: flex;
-    gap: 12px;
-  }
-  &__input {
-    width: 294px;
-    padding: 7px;
-    &::placeholder {
-    }
-  }
-}
 </style>

@@ -46,7 +46,9 @@ interface Pokemon {
 }
 
 defineProps<{
-  pokemonId: [id: number];
+  pokemon: Pokemon | null;
+  loading?: boolean;
+  error?: boolean;
 }>();
 
 const pokemon = ref<Pokemon | null>(null);
@@ -55,12 +57,10 @@ const error = ref(false);
 
 const fetchPokemon = async () => {
   try {
-    // Предполагаем, что API поддерживает фильтр по ID (например, ?id=1)
     const response = await fetch(`https://9d6066f5473655c8.mokky.dev/pokemons`);
     if (!response.ok) throw new Error('Failed to fetch');
     const data = await response.json();
 
-    // API возвращает массив, берём первый элемент (если найден)
     if (Array.isArray(data) && data.length > 0) {
       pokemon.value = data[0];
     } else {
