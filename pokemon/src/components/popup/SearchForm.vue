@@ -1,6 +1,6 @@
 <template>
   <div class="static-ctrl__search search">
-      <Form class="search__form" @submit.prevent="namePokemon">
+      <Form class="search__form" @submit.prevent="saveName">
         <input 
           v-model="inputName"
           type="text"
@@ -18,8 +18,44 @@
 </template>
 
 <script lang="ts" setup>
-//import { ref, defineEmits } from 'vue';
+import { ref, watch, defineEmits, defineProps } from 'vue';
 import Button from '../Button.vue';
+
+interface Pokemon {
+  id: number;
+  image: string;
+  name: string;
+  weight: number;
+  money: number;
+  earned: number;
+  age: string;
+}
+
+const props = defineProps<{
+  currentPokemon?: Pokemon | null;
+}>();
+
+const emit = defineEmits<{
+  'saveName': [{ name: string; pokemon?: Pokemon }];
+}>();
+
+const inputName = ref('');
+
+watch(
+  () => props.currentPokemon,
+  (newPokemon) => {
+    inputName.value = newPokemon?.name || '';
+  },
+  { immediate: true }
+);
+
+const saveName = () => {
+  const name = inputName.value.trim();
+  if (name) {
+    emit('saveName', { name, pokemon: props.currentPokemon || undefined });
+    inputName.value = ''; 
+  }
+};
 
 </script>
 

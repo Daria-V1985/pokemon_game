@@ -13,7 +13,11 @@
             :selectedTab="selectedTab"
             @changeTab="changeTab"
           >
-            <component :is="currentComponent" :pokemon="pokemon"/>
+            <component 
+              :is="currentComponent" 
+              :pokemon="pokemon"
+              @updatePokemon="$emit('updatePokemon', $event)"
+            />
           </Tabs>
           <div class="popup__footer">
             <Button @click="closeModal">
@@ -50,7 +54,10 @@ interface Popup {
 }
 
 const props = defineProps<Popup>();
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean];
+  'updatePokemon': [pokemon: Pokemon];  
+}>();
 
 const modalTabs = [
   {name: "/popup/feed", label: "Накормить"},

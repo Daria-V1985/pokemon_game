@@ -14,13 +14,14 @@
   <PokemonModal 
     v-model:modelValue="showModal" 
     :pokemon="selectedPokemon"
+    @updatePokemon="updatePokemonInfo"
     @close="closeSettings"
   />
 </template>
 
 <script lang="ts" setup>
-import PokemonCard from './PokemonCard.vue';
 import { ref, onMounted } from "vue";
+import PokemonCard from './PokemonCard.vue';
 import PokemonModal from './PokemonModal.vue';
 
 interface Pokemon {
@@ -51,7 +52,7 @@ const loadPokemons = async () => {
 const openSettings = (id: number): void => {
   const pokemon = pokemons.value.find(pokemon => pokemon.id === id)
   if (pokemon) {
-    selectedPokemon.value = pokemon;
+    selectedPokemon.value = structuredClone(pokemon);
     showModal.value = true;
   } else {
     console.warn(`Покемон с id ${id} не найден`);
@@ -61,6 +62,17 @@ const openSettings = (id: number): void => {
 const closeSettings = () => {
   showModal.value = false;
   selectedPokemon.value = null;
+};
+
+const updatePokemonInfo = async (updatedPokemon: Pokemon) => {
+  await loadPokemons();
+  const freshPokemon = pokemons.value.find(pokemon => pokemon.id === updatedPokemon.id);
+  if (freshPokemon) {
+    selectedPokemon.value = freshPokemon;
+  } else {
+    console.warn('Обновлённый покемон не найден!');
+  }
+  console.log('Список и модал обновлены после изменения в API');
 };
 
 onMounted(() => {
