@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, onMounted } from 'vue';
+import { defineProps } from 'vue';
 
 interface Pokemon {
   id: number,
@@ -50,32 +50,6 @@ defineProps<{
   loading?: boolean;
   error?: boolean;
 }>();
-
-const pokemon = ref<Pokemon | null>(null);
-const loading = ref(true);
-const error = ref(false);
-
-const fetchPokemon = async () => {
-  try {
-    const response = await fetch(`https://9d6066f5473655c8.mokky.dev/pokemons`);
-    if (!response.ok) throw new Error('Failed to fetch');
-    const data = await response.json();
-
-    if (Array.isArray(data) && data.length > 0) {
-      pokemon.value = data[0];
-    } else {
-      throw new Error('Покемон не найден!');
-    }
-  } catch {
-    error.value = true;
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(() => {
-  fetchPokemon();
-});
 </script>
 
 <style lang="scss" scoped>

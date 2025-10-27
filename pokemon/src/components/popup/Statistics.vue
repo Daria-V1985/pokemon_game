@@ -1,12 +1,13 @@
 <template>
-  <PokemonInfo :pokemon="pokemon" />
+  <PokemonInfo :pokemon="props.pokemon" />
   <PokemonCtrls 
-    :pokemon="pokemon"
+    :pokemon="props.pokemon"
+    @saveName="savePokemonName"
   />
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import PokemonInfo from './PokemonInfo.vue';
 import PokemonCtrls from './PokemonCtrls.vue';
 
@@ -20,7 +21,35 @@ interface Pokemon {
   age: string,
 }
 
-defineProps<{
+const props = defineProps<{
   pokemon: Pokemon | null;
 }>();
+
+const emit = defineEmits<{
+  'updatePokemon': [pokemon: Pokemon];
+}>();
+
+const API_URL = 'https://9d6066f5473655c8.mokky.dev/pokemons';
+
+const savePokemonName = async (newName: string) => {
+  if (!props.pokemon) return;
+  
+  try {
+    const updatedPokemon = { ...props.pokemon, name: newName };
+    const response = await fetch(`${API_URL}/${props.pokemon.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedPokemon),
+    });
+    if (response.ok) {
+      emit('updatePokemon', updatedPokemon); 
+      console.log(`Имя сохранено в API: ${newName}`);
+    } else {
+      alert('Ошибка сохранения в API');
+    }
+  } catch (err) {
+    console.error('Ошибка обновления:', err);
+    alert('Ошибка сети');
+  }
+};
 </script>

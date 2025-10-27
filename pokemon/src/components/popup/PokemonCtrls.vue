@@ -3,17 +3,42 @@
     <Button 
       class="static-ctrl__btn"
       color="primary"
-      type="submit">
+      type="submit"
+    >
       Удалить покемона
     </Button>
-    <SearchForm />
+    <SearchForm 
+      :current-pokemon="props.pokemon" 
+      @saveName="savePokemonName"/>
   </div>
 </template>
 
 <script lang="ts" setup>
-//import { ref, onMounted } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import Button from '../Button.vue';
 import SearchForm from './SearchForm.vue';
+
+interface Pokemon {
+  id: number;
+  image: string;
+  name: string;
+  weight: number;
+  money: number;
+  earned: number;
+  age: string;
+}
+
+const props = defineProps<{
+  pokemon: Pokemon | null;
+}>();
+
+const emit = defineEmits<{
+  'saveName': [{ name: string; pokemon?: Pokemon }];  
+}>();
+
+const savePokemonName = (payload: { name: string; pokemon?: Pokemon }) => {
+  emit('saveName', payload);  
+};
 </script>
 
 <style lang="scss" scoped>
