@@ -31,19 +31,19 @@ const emit = defineEmits<{
 
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/pokemons';
 
-const savePokemonName = async (newName: string) => {
+const savePokemonName = async (args: { name: string; pokemon?: Pokemon | undefined; }) => {
   if (!props.pokemon) return;
   
   try {
-    const updatedPokemon = { ...props.pokemon, name: newName };
+    const updatedPokemon = { ...props.pokemon, name: args.name };
     const response = await fetch(`${API_URL}/${props.pokemon.id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedPokemon),
     });
     if (response.ok) {
       emit('updatePokemon', updatedPokemon); 
-      console.log(`Имя сохранено в API: ${newName}`);
+      console.log(`Имя сохранено в API: ${args.name}`);
     } else {
       alert('Ошибка сохранения в API');
     }
