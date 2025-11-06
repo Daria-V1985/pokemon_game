@@ -10,7 +10,9 @@
         <Button 
           class="static-ctrl__btn"
           color="primary"
-          type="submit">
+          type="submit"
+          :disabled="!isValidName"
+        >
           Сохранить
         </Button>
       </Form>
@@ -18,8 +20,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, defineEmits, defineProps } from 'vue';
+import { ref, watch, defineProps, computed } from 'vue';
 import Button from '../Button.vue';
+import { getAlias, setAlias } from '../../stores/usePokemonAlias';
 
 interface Pokemon {
   id: number;
@@ -35,26 +38,35 @@ const props = defineProps<{
   currentPokemon?: Pokemon | null;
 }>();
 
-const emit = defineEmits<{
-  'saveName': [{ name: string; pokemon?: Pokemon }];
-}>();
+const storedName = (id?: number): string => {
+  if (!id) return '';
+  return getAlias(id) || '';
+};
 
-const inputName = ref('');
+const inputName = ref(storedName(props.currentPokemon?.id) || props.currentPokemon?.name || '');
+
+const isValidName = computed(() => {
+  const trimmed = inputName.value.trim();
+  if (!trimmed) return false;
+  const stored = storedName(props.currentPokemon?.id);
+  const base = props.currentPokemon?.name || '';
+  return trimmed !== stored && trimmed !== base;
+});
 
 watch(
   () => props.currentPokemon,
   (newPokemon) => {
-    inputName.value = newPokemon?.name || '';
+    inputName.value = storedName(newPokemon?.id) || newPokemon?.name || '';
   },
   { immediate: true }
 );
 
 const saveName = () => {
-  const name = inputName.value.trim();
-  if (name) {
-    emit('saveName', { name, pokemon: props.currentPokemon || undefined });
-    inputName.value = ''; 
-  }
+  const trimmedName = inputName.value.trim();
+  if (!isValidName.value || !props.currentPokemon?.id) return;
+
+  setAlias(props.currentPokemon.id, trimmedName);
+  alert('Имя сохранено!');  
 };
 
 </script>

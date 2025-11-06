@@ -21,6 +21,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
+
 import PokemonCard from './PokemonCard.vue';
 import PokemonModal from './PokemonModal.vue';
 

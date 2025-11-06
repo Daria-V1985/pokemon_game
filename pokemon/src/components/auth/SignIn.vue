@@ -34,12 +34,14 @@ import Input from "@/components/Input.vue";
 import { ref, onMounted } from "vue";
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/AuthStore'
+import { usePokemonStore } from '@/stores/usePokemonStore';
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
 
 const showErrors = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
+const pokemonStore = usePokemonStore();
 
 const signInSchema = yup.object({  
   authLogin: yup.string().required("Логин обязателен!"),
@@ -65,6 +67,18 @@ const onSubmit = handleSubmit(async (values) => {
       password: values.password 
     });
     alert(`Авторизация успешна!\nПользователь: ${authStore.user?.authLogin ?? 'нет данных'}`);
+    const authLogin = authStore.user?.authLogin;
+    if (authLogin) {
+      pokemonStore.loadFromStorage(authLogin);
+      if (pokemonStore.userPokemons.length === 0) {
+        try {
+          await pokemonStore.loadFromAPI(authLogin);
+        } catch (err) {
+          alert('Не удалось загрузить покемонов из API. Они будут доступны позже. Проверьте подключение к интернету.');
+          console.error('Ошибка загрузки покемонов в SignIn:', err);
+        }
+      }
+    }
     router.push('/main');
   } catch {
     showErrors.value = true;

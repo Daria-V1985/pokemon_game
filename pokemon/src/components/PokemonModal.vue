@@ -4,7 +4,7 @@
       <div :class="['popup__body', { 'open': showPopup }]">
         <div class="popup__container">
           <div class="popup__header popup-header">
-            <h5 class="popup-header__title">Управление покемоном {{ pokemon?.name || 'неизвестным' }}</h5>
+            <h5 class="popup-header__title">Управление покемоном {{ newName }}</h5>
             <div class="popup-header__close" @click="closeModal">&#10006;</div> 
           </div>
           <Tabs 
@@ -32,6 +32,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, defineProps, defineEmits, onMounted, watch } from "vue";
+import { getAlias } from "../stores/usePokemonAlias";
 
 import Tabs from "@/components/Tabs.vue";
 import Feed from "@/components/popup/Feed.vue";
@@ -73,6 +74,12 @@ const changeTab = (tabName: string) => {
 
 const currentComponent = computed(() => {
   return selectedTab.value === "/popup/feed" ? Feed : Statistics;
+});
+
+const newName = computed(() => {
+  if (!props.pokemon) return 'неизвестным';
+  const alias = getAlias(props.pokemon.id);
+  return alias || props.pokemon.name;
 });
 
 onMounted(() => {
