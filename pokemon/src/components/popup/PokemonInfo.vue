@@ -2,12 +2,12 @@
   <div v-if="pokemon" class="static__info static-info">
     <div class="static-info__body">
       <div class="static-info__img">
-        <img :src="pokemon.image" :alt="pokemon.name">
+        <img :src="pokemon.image" :alt="newName">
       </div>
       <div class="static-info__desc info-desc">
         <div class="info-desc__item">
           <div class="info-desc__item-title">Вид</div>
-          <div class="info-desc__item-data">{{ pokemon.name }}</div>
+          <div class="info-desc__item-data">{{ newName }}</div>
         </div>
         <div class="info-desc__item">
           <div class="info-desc__item-title">Вес</div>
@@ -33,7 +33,9 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
+import { getAlias } from '../../stores/usePokemonAlias';
+
 
 interface Pokemon {
   id: number,
@@ -45,11 +47,18 @@ interface Pokemon {
   age: string,
 }
 
-defineProps<{
+const props = defineProps<{
   pokemon: Pokemon | null;
   loading?: boolean;
   error?: boolean;
 }>();
+
+const newName = computed(() => {
+  if (!props.pokemon) return 'Не выбран';
+  const alias = getAlias(props.pokemon.id);
+  return alias || props.pokemon.name; 
+});
+
 </script>
 
 <style lang="scss" scoped>

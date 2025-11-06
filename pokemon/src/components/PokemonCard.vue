@@ -1,13 +1,13 @@
 <template>
   <article class="pokemons__card card">
     <div class="card__header">
-      <h3 class="card__title">{{ props.name }}</h3>
+      <h3 class="card__title">{{ newName }}</h3>
       <button class="card__settings" @click="$emit('click', props.id)">
         <img src="../assets/image/svg/setting.svg" alt="Настройка покемона">
       </button>
     </div>
     <div class="card__image">
-      <img :src="props.image" :alt="props.name"/>
+      <img :src="props.image" :alt="newName"/>
     </div>
     <div class="card__info card-info">
       <div class="card-info__row">
@@ -23,7 +23,8 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
+import { getAlias } from '../stores/usePokemonAlias';
 
 interface Pokemon {
   id: number,
@@ -37,6 +38,10 @@ const props = defineProps<Pokemon>();
 defineEmits<{
   'click': [id: number]
 }>();
+
+const newName = computed(() => {
+  return getAlias(props.id) || props.name;
+});
 
 </script>
 

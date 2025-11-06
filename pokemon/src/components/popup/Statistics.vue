@@ -52,4 +52,5 @@ const savePokemonName = async (args: { name: string; pokemon?: Pokemon | undefin
     alert('Ошибка сети');
   }
 };
+
 </script>
