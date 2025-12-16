@@ -1,56 +1,63 @@
-import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<{ authLogin: string } | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  const isAuth = computed(() => !!user.value);
-
-  function loadUserFromStorage() {
-    const stored = localStorage.getItem('authUser');
-    user.value = stored ? JSON.parse(stored) : null;
-  }
-
-  watch(user, (newUser) => {
-    if (newUser) {
-      localStorage.setItem('authUser', JSON.stringify(newUser));
-    } else {
-      localStorage.removeItem('authUser');
-    }
-  });
-
-  async function loginUser(cred: { login: string; password: string }) {
-    if (!cred.login || !cred.password) {
-      throw new Error('Логин и пароль обязательны');
-    }
+   const loginUser = async (cred: { login: string; password: string }) => {
     loading.value = true;
     error.value = null;
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       user.value = { authLogin: cred.login };
     }
-    catch (e: unknown) {
+    catch (err) {
       error.value = 'Ошибка авторизации';
-      user.value = null;
+      throw err;
     }
     finally {
       loading.value = false;
     }
   }
 
-  function logout() {
+  const  register = async (cred: {
+    login: string;
+    password: string;
+  }) => { loading.value = true; error.value = null;
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      user.value = { authLogin: cred.login };
+      return { 
+        success: true, 
+        user: { 
+          id: Date.now().toString(),
+          login: cred.login,
+        } 
+      };
+    } catch (err) {
+      error.value = 'Ошибка регистрации';
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Неизвестная ошибка' 
+      };
+    } finally {
+      loading.value = false;
+    }
+   }
+
+   const logoutUser = () => {
     user.value = null;
+    localStorage.removeItem('authUser');
   }
 
   return { 
     user, 
-    isAuth,
     loginUser,
-    loadUserFromStorage,
+    register,
+    //logoutUser,
     loading, 
-    logout,
-    error,
+    error
   };
 })

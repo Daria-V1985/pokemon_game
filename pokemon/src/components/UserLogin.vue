@@ -1,25 +1,15 @@
 <template>
   <div class="login">
-    <h2 class="login__name">{{ authLogin || 'Гость' }}</h2>
+    <h2 class="login__name">{{ user?.authLogin || 'Гость' }}</h2>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from '@/stores/AuthStore';
 
-const stored = localStorage.getItem('authUser');
-let login = '';
-
-if (stored) {
-  try {
-    const parsed = JSON.parse(stored);
-    login = parsed.authLogin || '';
-  } catch {
-    login = stored;
-  }
-}
-
-const authLogin = ref(login);
+const authStore = useAuthStore();
+const { user } = storeToRefs(authStore);
 </script>
 
 <style lang="scss" scoped>
