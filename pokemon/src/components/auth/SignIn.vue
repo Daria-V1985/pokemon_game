@@ -66,6 +66,10 @@ const onSubmit = handleSubmit(async (values) => {
       login: values.authLogin, 
       password: values.password 
     });
+
+    console.log('Полный объект пользователя:', authStore.user);
+    console.log('Все поля:', Object.keys(authStore.user || {}));
+
     alert(`Авторизация успешна!\nПользователь: ${authStore.user?.authLogin ?? 'нет данных'}`);
     const authLogin = authStore.user?.authLogin;
     if (authLogin) {
