@@ -1,92 +1,35 @@
 const STORAGE_PREFIX = 'hm_';
 
-export class lsHashMap<T = any> {
-  mapName: string;
-  _iMap: Map<string, T>;
+export class lsHashMap<T> {
+  key: string;
 
-  constructor(mapName: string) {
-    this.mapName = mapName;
-    this._iMap = new Map();
-    this._loadAllFromLS();
+  constructor(key: string) {
+    this.key = key;
   }
 
-  _getLsKey(hash: string) {
-    return `${STORAGE_PREFIX}${this.mapName}_${hash}`;
+  set(id: string, value: T) {
+    const allData = this.getAllValues();
+    allData[id] = value;
+    localStorage.setItem(this.key, JSON.stringify(allData));
   }
 
-  _loadAllFromLS() { 
-    this._iMap.clear();
-    for (let i = 0; i < localStorage.length; i++) {
-      const lsKey = localStorage.key(i);
-      if (lsKey === null) continue;
-      if (lsKey.startsWith(`${STORAGE_PREFIX}${this.mapName}_`)) {
-        const rawData = localStorage.getItem(lsKey);
-        if (rawData === null) continue;
-        try {
-          const value = JSON.parse(rawData);
-          const hash = lsKey.replace(`${STORAGE_PREFIX}${this.mapName}_`, '');
-          this._iMap.set(hash, value);
-        } catch (e) {
-          console.error(`Error parsing data for key ${lsKey}:`, e);
-        }
-      }
-    }
+  get(id: string) {
+    const allData = this.getAllValues();
+    return allData[id] || null;
   }
 
-  _persistAllToLS() {
-    for (let i = 0; i < localStorage.length; i++) {
-      const lsKey = localStorage.key(i);
-      if (lsKey === null) continue;
-      if (lsKey.startsWith(`${STORAGE_PREFIX}${this.mapName}_`)) {
-        localStorage.removeItem(lsKey);
-      }
-    }
-    this._iMap.forEach((value, hash) => {
-      const lsKey = this._getLsKey(hash);
-      localStorage.setItem(lsKey, JSON.stringify(value));
-    });
+  getAllValues(): Record<string, T> {
+    const data = localStorage.getItem(this.key);
+    return data ? JSON.parse(data) : {};
   }
 
-
-  set(hash: string, value: T) {
-    this._iMap.set(hash, value);
-    const lsKey = this._getLsKey(hash);
-    localStorage.setItem(lsKey, JSON.stringify(value));
-  }
-
-  get(hash: string) {
-    return this._iMap.get(hash);
-  }
-
-  has(hash: string) {
-    return this._iMap.has(hash);
-  }
-
-  delete(hash: string) {
-    const result = this._iMap.delete(hash);
-    if (result) {
-      const lsKey = this._getLsKey(hash);
-      localStorage.removeItem(lsKey);
-    }
-    return result;
-  }
-
-  getAllValues() {
-    return Array.from(this._iMap.values());
+  delete(id: string) {
+    const allData = this.getAllValues();
+    delete allData[id];
+    localStorage.setItem(this.key, JSON.stringify(allData));
   }
 
   clear() {
-    this._iMap.clear();
-    for (let i = 0; i < localStorage.length; i++) {
-      const lsKey = localStorage.key(i);
-      if (lsKey === null) continue;
-      if (lsKey.startsWith(`${STORAGE_PREFIX}${this.mapName}_`)) {
-        localStorage.removeItem(lsKey);
-      }
-    }
-  }
-
-  get size() {
-    return this._iMap.size;
+    localStorage.removeItem(this.key);
   }
 }
