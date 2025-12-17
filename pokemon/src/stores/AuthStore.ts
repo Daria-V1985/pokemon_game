@@ -12,6 +12,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       user.value = { authLogin: cred.login };
+
+      localStorage.setItem('authUser', JSON.stringify(user.value));
+      console.log('User saved to localStorage:', user.value);
+    
+    return { success: true };
     }
     catch (err) {
       error.value = 'Ошибка авторизации';
@@ -52,11 +57,25 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('authUser');
   }
 
+  const loadUserFromStorage = () => {
+  try {
+    const savedUser = localStorage.getItem('authUser');
+    if (savedUser) {
+      user.value = JSON.parse(savedUser);
+      console.log('User loaded from localStorage:', user.value);
+    }
+  } catch (error) {
+    console.error('Error loading user from localStorage:', error);
+    user.value = null;
+  }
+};
+
   return { 
     user, 
     loginUser,
     register,
     //logoutUser,
+    loadUserFromStorage,
     loading, 
     error
   };

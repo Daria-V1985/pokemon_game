@@ -29,17 +29,21 @@ export const useUserStore = defineStore('user', {
 
       if (authStore.user?.authLogin) {
         const storageKey = `qwery_${authStore.user.authLogin}`;
-        const userDataStr = localStorage.getItem(storageKey);
+        const pokemonsKey = `${authStore.user.authLogin}_pokemons`;
         
+        const userDataStr = localStorage.getItem(storageKey);
         if (userDataStr) {
           const userData = JSON.parse(userDataStr);
           this.money = userData.money || 100;
         }
-        this.pokemons = new lsHashMap<Pokemon>('guest_pokemons');
+        this.pokemons = new lsHashMap<Pokemon>(pokemonsKey);
+        console.log('Инициализация пользователя:', authStore.user.authLogin);
+      } else {
+        this.resetUserData();
       }
     },
 
-    addPokemon(pokemonData: Pokemon) {
+    /* addPokemon(pokemonData: Pokemon) {
       this.pokemons.set(pokemonData.id.toString(), pokemonData);
       this.saveUserData();
     },
@@ -65,7 +69,7 @@ export const useUserStore = defineStore('user', {
     addMoney(amount: number) {
       this.money += amount;
       this.saveUserData(); 
-    },
+    }, */
 
     saveUserData() {
       const authStore = useAuthStore();
@@ -76,6 +80,7 @@ export const useUserStore = defineStore('user', {
           money: this.money,
         };
         localStorage.setItem(storageKey, JSON.stringify(userData));
+        console.log('User data saved for:', authStore.user.authLogin);
       }
     },
 
