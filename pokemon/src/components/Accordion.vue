@@ -11,9 +11,9 @@
 </template>
 
 <script  lang="ts" setup>
-import { ref, watch, defineProps, defineEmits } from "vue";
+import { ref, watch, defineProps as defineMyProps, defineEmits as defineMyEmits } from "vue";
 
-const props = defineProps({
+const props = defineMyProps({
   title: { 
     type: String, 
     required: true, 
@@ -24,7 +24,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineMyEmits(['update:modelValue']);
 const isOpen = ref(props.modelValue);
 
 watch(() => props.modelValue, (value) => {

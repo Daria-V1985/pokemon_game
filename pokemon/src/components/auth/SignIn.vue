@@ -31,17 +31,17 @@
 import Button from "@/components/Button.vue";
 import Input from "@/components/Input.vue";
 
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/AuthStore'
-import { usePokemonStore } from '@/stores/usePokemonStore';
+import { useUserStore } from "@/stores/useUserStore";
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
 
 const showErrors = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
-const pokemonStore = usePokemonStore();
+const userStore = useUserStore();
 
 const signInSchema = yup.object({  
   authLogin: yup.string().required("Логин обязателен!"),
@@ -56,10 +56,6 @@ const { handleSubmit, values, errors, setFieldValue } = useForm({
   },
 });
 
-onMounted(() => {
-  console.log('SignIn компонент смонтирован');
-})
-
 const onSubmit = handleSubmit(async (values) => {
   try {
     await authStore.loginUser({ 
@@ -70,22 +66,16 @@ const onSubmit = handleSubmit(async (values) => {
     console.log('Полный объект пользователя:', authStore.user);
     console.log('Все поля:', Object.keys(authStore.user || {}));
 
-    alert(`Авторизация успешна!\nПользователь: ${authStore.user?.authLogin ?? 'нет данных'}`);
-    const authLogin = authStore.user?.authLogin;
-    if (authLogin) {
-      pokemonStore.loadFromStorage(authLogin);
-      if (pokemonStore.userPokemons.length === 0) {
-        try {
-          await pokemonStore.loadFromAPI(authLogin);
-        } catch (err) {
-          alert('Не удалось загрузить покемонов из API. Они будут доступны позже. Проверьте подключение к интернету.');
-          console.error('Ошибка загрузки покемонов в SignIn:', err);
-        }
-      }
+    if (authStore.user && userStore.isInitial) {
+      alert(`Авторизация успешна!\nПользователь: ${authStore.user.login}`);
+      router.push('/main');
+    } else {
+      throw new Error('Ошибка инициализации пользовательских данных');
     }
-    router.push('/main');
-  } catch {
+  } catch (err) {
     showErrors.value = true;
+    console.error('Ошибка авторизации:', err);
+    alert(err instanceof Error ? err.message : 'Ошибка авторизации');
   }
 }, () => {
   showErrors.value = true;
