@@ -1,28 +1,34 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
+import { onMounted, onBeforeUnmount } from 'vue';
 import { useUserStore } from '@/stores/useUserStore';
 import { useAuthStore } from '@/stores/AuthStore';
+import { lsHashMap } from '@/stores/lsHashMap';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
 
 onMounted(() => {
-  if (authStore.user?.authLogin) {
-    userStore.initStore();
-  }
+  authStore.loadAuthData();
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('unload', handleUnload);
 });
 
-watch(() => authStore.user, (newUser, oldUser) => {
-  if (newUser?.authLogin) {
-    userStore.initStore();
-  } else if (oldUser) {
-    userStore.resetUserData();
-  }
+onBeforeUnmount (() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  window.removeEventListener('unload', handleUnload);
 });
 
-watch(() => userStore.money, (newMoney) => {
-  localStorage.setItem('userMoney', JSON.stringify(newMoney));
-}, { deep: true });
+const handleBeforeUnload = () => {
+  if (authStore.user) {
+    authStore.saveAuthData();
+    userStore.saveUserData();
+  }
+};
+
+const handleUnload = () => {
+  lsHashMap.flushAllData();
+};
 
 </script>
 

@@ -1,92 +1,67 @@
 import { defineStore } from 'pinia';
-import { lsHashMap } from '@/stores/lsHashMap'; 
-import { useAuthStore } from './AuthStore';
+import { ref, computed } from 'vue';
 
-interface UserState {
-  money: number;
-  pokemons: lsHashMap<Pokemon>;
-}
-
-interface Pokemon {
+export interface Pokemon {
   id: number,
   name: string,
-  image: string,
-  weight: number,
-  money: number,
-  earned: number,
-  age: string,
+  sprite: string,
 }
 
-export const useUserStore = defineStore('user', {
-  state: (): UserState => ({
-    money: 100,
-    pokemons: new lsHashMap<Pokemon>(''),
-  }),
+export const useUserStore = defineStore('user', () => {
+  const money = ref(0);
+  const pokemons = ref<Pokemon[]>([]);
+  const isInitial = ref(false);
+  
+  const hasData = computed(() => isInitial.value && (money.value > 0 || pokemons.value.length > 0));
 
-  actions: {
-    initStore() {
-      const authStore = useAuthStore();
+  const initNewUser = () => {
+    money.value = 0;
+    pokemons.value = [];
+    isInitial.value = true;
+  };
 
-      if (authStore.user?.authLogin) {
-        const storageKey = `qwery_${authStore.user.authLogin}`;
-        const pokemonsKey = `${authStore.user.authLogin}_pokemons`;
-        
-        const userDataStr = localStorage.getItem(storageKey);
-        if (userDataStr) {
-          const userData = JSON.parse(userDataStr);
-          this.money = userData.money || 100;
-        }
-        this.pokemons = new lsHashMap<Pokemon>(pokemonsKey);
-        console.log('Инициализация пользователя:', authStore.user.authLogin);
-      } else {
-        this.resetUserData();
+  const loadUserData = () => {
+    const data = localStorage.getItem('userData');
+    if (data) {
+      try {
+        const parsedData = JSON.parse(data);
+        money.value = parsedData.money || 0;
+        pokemons.value = parsedData.pokemons || [];
+        isInitial.value = true;
+      } catch (err) {
+        console.error('Не удалось обработать данные:', err);
+        initNewUser();
       }
-    },
-
-    /* addPokemon(pokemonData: Pokemon) {
-      this.pokemons.set(pokemonData.id.toString(), pokemonData);
-      this.saveUserData();
-    },
-
-    removePokemon(pokemonId: Pokemon) {
-      this.pokemons.delete(pokemonId.toString());
-      this.saveUserData();
-    },
-
-    getPokemon(pokemonId: Pokemon) {
-      return this.pokemons.get(pokemonId.toString());
-    },
-
-    getAllPokemons() {
-      return this.pokemons.getAllValues();
-    },
-
-    updateMoney(amount: number) {
-      this.money = amount;
-      this.saveUserData();
-    },
-
-    addMoney(amount: number) {
-      this.money += amount;
-      this.saveUserData(); 
-    }, */
-
-    saveUserData() {
-      const authStore = useAuthStore();
-      
-      if (authStore.user?.authLogin) {
-        const storageKey = `qwery_${authStore.user.authLogin}`;
-        const userData = {
-          money: this.money,
-        };
-        localStorage.setItem(storageKey, JSON.stringify(userData));
-        console.log('User data saved for:', authStore.user.authLogin);
-      }
-    },
-
-    resetUserData() {
-      this.money = 100;
-      this.pokemons = new lsHashMap<Pokemon>('');
     }
-  },
+  };
+
+  const saveUserData = () => {
+    if (!isInitial.value) return;
+      
+    const userData = {
+      money: money.value,
+      pokemons: pokemons.value
+    };
+    localStorage.setItem(`userData`, JSON.stringify(userData));  
+  };
+
+  const addMoney = (sum: number) => {
+    money.value += sum;
+  };
+
+  const addPokemon = (pokemon: Pokemon) => {
+    pokemons.value.push(pokemon);
+  };
+
+  return {
+    money,
+    pokemons,
+    isInitial,
+    hasData,
+    initNewUser,
+    loadUserData,
+    saveUserData,
+    addMoney,
+    addPokemon
+  };
 });

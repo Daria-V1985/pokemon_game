@@ -13,10 +13,8 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/AuthStore';
-import { useCoinsStore } from '@/stores/CoinsStore';
 
 const authStore = useAuthStore();
-const coinsStore = useCoinsStore();
 
 function onIncrement() {
   coinsStore.increment();
