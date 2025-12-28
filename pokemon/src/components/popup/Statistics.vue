@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps as vueStatisticsProps, defineEmits as vueStatisticsEmits } from 'vue';
 import PokemonInfo from './PokemonInfo.vue';
 import PokemonCtrls from './PokemonCtrls.vue';
 
@@ -21,11 +21,11 @@ interface Pokemon {
   age: string,
 }
 
-const props = defineProps<{
+const props = vueStatisticsProps<{
   pokemon: Pokemon | null;
 }>();
 
-const emit = defineEmits<{
+const emit = vueStatisticsEmits<{
   'updatePokemon': [pokemon: Pokemon];
 }>();
 

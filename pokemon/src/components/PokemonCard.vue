@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, defineProps as vuePokemonCardProps, defineEmits as vuePokemonCardEmits } from 'vue';
 
 interface Pokemon {
   id: number,
@@ -34,8 +34,8 @@ interface Pokemon {
   alias?: string,
 }
 
-const props = defineProps<Pokemon>();
-defineEmits<{
+const props = vuePokemonCardProps<Pokemon>();
+vuePokemonCardEmits<{
   'click': [id: number]
 }>();
 

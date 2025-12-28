@@ -20,9 +20,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, defineProps, computed } from 'vue';
+import { ref, watch, defineProps as vueSearchFormProps, computed } from 'vue';
 import Button from '../Button.vue';
-import { getAlias, setAlias } from '../../stores/usePokemonAlias';
 
 interface Pokemon {
   id: number;
@@ -34,7 +33,7 @@ interface Pokemon {
   age: string;
 }
 
-const props = defineProps<{
+const props = vueSearchFormProps<{
   currentPokemon?: Pokemon | null;
 }>();
 
