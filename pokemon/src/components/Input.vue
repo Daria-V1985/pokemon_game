@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits, withDefaults } from "vue";
+import { defineProps as vueInputProps, defineEmits as vueInputEmits } from "vue";
 
 interface inputProps {
   error?: string[];
@@ -34,14 +34,17 @@ interface inputProps {
   width?: string,
 }
 
-withDefaults(defineProps<inputProps>(), {
-  error: () => [],
-  value: "",
-  type: "",
-  width: "352px",
-})
+const { 
+  error = [], 
+  value = "", 
+  name, 
+  type = "text", 
+  placeholder, 
+  label, 
+  width = "352px" 
+} = vueInputProps<inputProps>();
 
-const emit = defineEmits<{
+const emit = vueInputEmits<{
   change: [id: number]
   'update:value': [value: string]
 }>();

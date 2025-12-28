@@ -1,19 +1,19 @@
 <template>
-  <div :class="['grid-cell', { active: isActive }]">
+  <div :class="['grid-cell', { active: props.isActive }]">
     <img v-if="props.itemSrc" :src="props.itemSrc" :alt="props.itemAlt" class="grid-cell__item" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps as vueCellProps } from 'vue';
 
 interface Cells {
   isActive: boolean;
-  itemSrc?: string; // путь к изображению
-  itemAlt?: string; // альт текст для изображения
+  itemSrc?: string; 
+  itemAlt?: string; 
 }
 
-const props = defineProps<Cells>();
+const props = vueCellProps<Cells>();
 </script>
 
 <style scoped>

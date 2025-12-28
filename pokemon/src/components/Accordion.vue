@@ -2,7 +2,7 @@
   <div class="page-accordion__item" :class="{ active: isOpen }"
   >
     <div @click="toggle" class="page-accordion__item-title" :class="{ active: isOpen }">
-      <slot name="title">{{ title }}</slot>
+      <slot name="title">{{ props.title }}</slot>
     </div>
     <div v-show="isOpen" class="page-accordion__item-content content-item">
       <slot />
@@ -11,9 +11,10 @@
 </template>
 
 <script  lang="ts" setup>
-import { ref, watch, defineProps as defineMyProps, defineEmits as defineMyEmits } from "vue";
+import { ref, watch } from "vue";
+import { defineProps as vueAccordionProps, defineEmits as vueAccordionEmits} from "vue";
 
-const props = defineMyProps({
+const props = vueAccordionProps({
   title: { 
     type: String, 
     required: true, 
@@ -24,7 +25,7 @@ const props = defineMyProps({
   }
 });
 
-const emit = defineMyEmits(['update:modelValue']);
+const emit = vueAccordionEmits(['update:modelValue']);
 const isOpen = ref(props.modelValue);
 
 watch(() => props.modelValue, (value) => {

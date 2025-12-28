@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps as vuePokemonCtrlsProps, defineEmits as vuePokemonCtrlsEmits } from 'vue';
 import Button from '../Button.vue';
 import SearchForm from './SearchForm.vue';
 
@@ -28,11 +28,11 @@ interface Pokemon {
   age: string;
 }
 
-const props = defineProps<{
+const props = vuePokemonCtrlsProps<{
   pokemon: Pokemon | null;
 }>();
 
-const emit = defineEmits<{
+const emit = vuePokemonCtrlsEmits<{
   'saveName': [{ name: string; pokemon?: Pokemon }];  
 }>();
 

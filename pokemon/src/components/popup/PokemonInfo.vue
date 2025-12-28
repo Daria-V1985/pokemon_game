@@ -33,8 +33,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, computed } from 'vue';
-import { getAlias } from '../../stores/usePokemonAlias';
+import { defineProps as vuePokemonInfoProps, computed } from 'vue';
 
 
 interface Pokemon {
@@ -47,7 +46,7 @@ interface Pokemon {
   age: string,
 }
 
-const props = defineProps<{
+const props = vuePokemonInfoProps<{
   pokemon: Pokemon | null;
   loading?: boolean;
   error?: boolean;
