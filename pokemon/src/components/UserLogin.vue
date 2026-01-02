@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    <h2 class="login__name">{{ user?.authLogin || 'Гость' }}</h2>
+    <h2 class="login__name">{{ user?.login || 'Гость' }}</h2>
   </div>
 </template>
 
