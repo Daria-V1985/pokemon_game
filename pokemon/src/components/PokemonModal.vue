@@ -31,8 +31,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineProps, defineEmits, onMounted, watch } from "vue";
-import { getAlias } from "../stores/usePokemonAlias";
+import { ref, computed, onMounted, watch } from "vue";
+import { defineProps as vueUserLoginProps, defineEmits as vueUserLoginEmits } from 'vue';
 
 import Tabs from "@/components/Tabs.vue";
 import Feed from "@/components/popup/Feed.vue";
@@ -54,8 +54,8 @@ interface Popup {
   pokemon: Pokemon | null,
 }
 
-const props = defineProps<Popup>();
-const emit = defineEmits<{
+const props = vueUserLoginProps<Popup>();
+const emit = vueUserLoginEmits<{
   'update:modelValue': [value: boolean];
   'updatePokemon': [pokemon: Pokemon];  
 }>();

@@ -8,27 +8,46 @@ const userStore = useUserStore();
 const authStore = useAuthStore();
 
 onMounted(() => {
-  authStore.loadAuthData();
+  const savedAuth = lsHashMap.get('authUser');
+  if (savedAuth) {
+    authStore.user = savedAuth;
+    console.log('Данные авторизации загружены через lsHashMap');
+  }
 
-  window.addEventListener('beforeunload', handleBeforeUnload);
-  window.addEventListener('unload', handleUnload);
+  if (authStore.user?.id) {
+    const savedUser = lsHashMap.get(`userData_${authStore.user.id}`);
+    if (savedUser) {
+      userStore.money = savedUser.money || 0;
+      userStore.pokemons = savedUser.pokemons || [];
+      userStore.isInitial = true;
+      console.log('Данные пользователя загружены для:', authStore.user.id);
+    }
+  }
 });
 
 onBeforeUnmount (() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload);
-  window.removeEventListener('unload', handleUnload);
+  if (authStore.user?.id && userStore.isInitial) {
+    lsHashMap.set(`userData_${authStore.user.id}`, {
+      money: userStore.money,
+      pokemons: userStore.pokemons,
+    });
+    console.log('Данные пользователя сохранены для:', authStore.user.id);
+    
+  }
 });
 
-const handleBeforeUnload = () => {
+window.addEventListener('beforeunload', () => {
   if (authStore.user) {
-    authStore.saveAuthData();
-    userStore.saveUserData();
+    lsHashMap.set('authUser', authStore.user);
   }
-};
-
-const handleUnload = () => {
-  lsHashMap.flushAllData();
-};
+  
+  if (authStore.user?.id && userStore.isInitial) {
+    lsHashMap.set(`userData_${authStore.user.id}`, {
+      money: userStore.money,
+      pokemons: userStore.pokemons
+    });
+  }
+});
 
 </script>
 

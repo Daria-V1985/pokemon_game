@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { useUserStore } from './useUserStore';
+import { ref, computed } from 'vue';
+import { lsHashMap } from './lsHashMap'; 
 
 export interface AuthUser {
   id: string;
@@ -13,24 +13,15 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null);
 
   const loadAuthData = () => {
-    const authData = localStorage.getItem('authData');
-    if (authData) {
-      try {
-        user.value = JSON.parse(authData);
-        const userStore = useUserStore();
-        userStore.loadUserData();
-      } catch (err) {
-        console.warn('Не удалось обработать данные:', err);
-        user.value = null;
-      }
+    const savedAuth = lsHashMap.get('authUser');
+    if (savedAuth) {
+        user.value = savedAuth;
     }
   };
 
   const saveAuthData = () => {
     if (user.value) {
-      localStorage.setItem('authData', JSON.stringify(user.value));
-    } else {
-      localStorage.removeItem('authData');
+      lsHashMap.set('authUser', user.value);
     }
   };
 

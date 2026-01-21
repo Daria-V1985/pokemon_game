@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, defineEmits } from "vue";
+import { defineProps as vueTabsProps, defineEmits as vueTabsEmits } from "vue";
 
 interface Tab {
   name: string;
@@ -26,8 +26,8 @@ interface Props {
   selectedTab?: string;
 }
 
-const props = defineProps<Props>();
-const emit = defineEmits(["changeTab"])
+const props = vueTabsProps<Props>();
+const emit = vueTabsEmits(["changeTab"])
 
 const clickOnTab = (tabName: string) => {
   emit("changeTab", tabName)
