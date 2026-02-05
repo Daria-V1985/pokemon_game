@@ -51,7 +51,7 @@ class LSHashMap {
 
   get(id: string) {
     if (this.cache.has(id)) {
-      return this.cache.has(id);
+      return this.cache.get(id);
     }
 
     const data = localStorage.getItem(id);
@@ -67,7 +67,7 @@ class LSHashMap {
     }
     return null;
   }
-
+ 
   set (id: string, data: any) {
     this.cache.set(id, data);
     this.pendingWrites.add(id);
@@ -113,6 +113,21 @@ class LSHashMap {
   clearCache() {
     this.cache.clear();
     this.pendingWrites.clear();
+  }
+
+  getAuthUser() {
+    return this.get('authUser') as { id: string, login: string } | null;
+  }
+
+  getUserData(userId: string) {
+    return this.get(`userData_${userId}`) as {
+      money: number;
+      pokemons: any[];
+    } | null;
+  }
+
+  getPokemonAlias(pokemonId: number) {
+    return this.get(`pokemonAlias_${pokemonId}`) as string | null;
   }
 }
 

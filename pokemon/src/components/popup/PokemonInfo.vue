@@ -33,8 +33,8 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps as vuePokemonInfoProps, computed } from 'vue';
-
+import { computed } from 'vue';
+import { lsHashMap } from "@/stores/lsHashMap"
 
 interface Pokemon {
   id: number,
@@ -46,7 +46,7 @@ interface Pokemon {
   age: string,
 }
 
-const props = vuePokemonInfoProps<{
+const props = defineProps<{
   pokemon: Pokemon | null;
   loading?: boolean;
   error?: boolean;
@@ -54,7 +54,7 @@ const props = vuePokemonInfoProps<{
 
 const newName = computed(() => {
   if (!props.pokemon) return 'Не выбран';
-  const alias = getAlias(props.pokemon.id);
+  const alias = lsHashMap.getPokemonAlias(props.pokemon.id);
   return alias || props.pokemon.name; 
 });
 

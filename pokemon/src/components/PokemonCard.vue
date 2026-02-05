@@ -23,7 +23,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineProps as vuePokemonCardProps, defineEmits as vuePokemonCardEmits } from 'vue';
+import { computed } from 'vue';
+import { lsHashMap } from "@/stores/lsHashMap"
 
 interface Pokemon {
   id: number,
@@ -34,13 +35,13 @@ interface Pokemon {
   alias?: string,
 }
 
-const props = vuePokemonCardProps<Pokemon>();
-vuePokemonCardEmits<{
+const props = defineProps<Pokemon>();
+defineEmits<{
   'click': [id: number]
 }>();
 
 const newName = computed(() => {
-  return getAlias(props.id) || props.name;
+  return lsHashMap.getPokemonAlias(props.id) || props.name;
 });
 
 </script>

@@ -20,7 +20,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, defineProps as vueSearchFormProps, computed } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { lsHashMap } from "@/stores/lsHashMap"
 import Button from '../Button.vue';
 
 interface Pokemon {
@@ -33,13 +34,13 @@ interface Pokemon {
   age: string;
 }
 
-const props = vueSearchFormProps<{
+const props = defineProps<{
   currentPokemon?: Pokemon | null;
 }>();
 
 const storedName = (id?: number): string => {
   if (!id) return '';
-  return getAlias(id) || '';
+  return lsHashMap.getPokemonAlias(id) || '';
 };
 
 const inputName = ref(storedName(props.currentPokemon?.id) || props.currentPokemon?.name || '');
@@ -64,7 +65,7 @@ const saveName = () => {
   const trimmedName = inputName.value.trim();
   if (!isValidName.value || !props.currentPokemon?.id) return;
 
-  setAlias(props.currentPokemon.id, trimmedName);
+  lsHashMap.set(props.currentPokemon.id.toString(), trimmedName);
   alert('Имя сохранено!');  
 };
 

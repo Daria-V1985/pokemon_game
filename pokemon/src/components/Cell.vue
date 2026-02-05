@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps as vueCellProps } from 'vue';
 
 interface Cells {
   isActive: boolean;
@@ -13,7 +12,7 @@ interface Cells {
   itemAlt?: string; 
 }
 
-const props = vueCellProps<Cells>();
+const props = defineProps<Cells>();
 </script>
 
 <style scoped>

@@ -20,7 +20,6 @@
 
 <script lang="ts" setup>
 import Button from './Button.vue';
-import { defineProps as vueShopCardProps } from 'vue';
 
 interface Shop {
   id: number,
@@ -30,7 +29,7 @@ interface Shop {
   buy: number,
 }
 
-const props = vueShopCardProps<Shop>();
+const props = defineProps<Shop>();
 </script>
 
 <style lang="scss" scoped>
