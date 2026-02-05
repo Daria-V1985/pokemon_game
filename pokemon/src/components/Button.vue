@@ -10,7 +10,6 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps as vueButtonProps, defineEmits as vueButtonEmits } from "vue";
 
 interface btnProps {
   label?: string;
@@ -21,16 +20,16 @@ interface btnProps {
   size?: "normal" | "large",
 }
 
-const {
-  label = "Button",
-  color = "primary",
-  disabled = false,
-  rounded = false,
-  outlined = false,
-  size = "normal",
-} = vueButtonProps<btnProps>();
+withDefaults(defineProps<btnProps>(), {
+  label: "Button",
+  color: "primary",
+  disabled: false,
+  rounded: false,
+  outlined: false,
+  size: "normal",
+})
 
-const emit = vueButtonEmits<{
+const emit = defineEmits<{
   click: [],
 }>();
 

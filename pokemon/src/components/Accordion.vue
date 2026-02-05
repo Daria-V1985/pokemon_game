@@ -12,9 +12,8 @@
 
 <script  lang="ts" setup>
 import { ref, watch } from "vue";
-import { defineProps as vueAccordionProps, defineEmits as vueAccordionEmits} from "vue";
 
-const props = vueAccordionProps({
+const props = defineProps({
   title: { 
     type: String, 
     required: true, 
@@ -25,7 +24,7 @@ const props = vueAccordionProps({
   }
 });
 
-const emit = vueAccordionEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue']);
 const isOpen = ref(props.modelValue);
 
 watch(() => props.modelValue, (value) => {

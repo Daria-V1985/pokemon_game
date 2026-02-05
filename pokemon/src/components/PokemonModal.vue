@@ -32,8 +32,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { defineProps as vueUserLoginProps, defineEmits as vueUserLoginEmits } from 'vue';
-
+import { lsHashMap } from "@/stores/lsHashMap"
 import Tabs from "@/components/Tabs.vue";
 import Feed from "@/components/popup/Feed.vue";
 import Statistics from "@/components/popup/Statistics.vue";
@@ -54,8 +53,8 @@ interface Popup {
   pokemon: Pokemon | null,
 }
 
-const props = vueUserLoginProps<Popup>();
-const emit = vueUserLoginEmits<{
+const props = defineProps<Popup>();
+const emit = defineEmits<{
   'update:modelValue': [value: boolean];
   'updatePokemon': [pokemon: Pokemon];  
 }>();
@@ -78,7 +77,7 @@ const currentComponent = computed(() => {
 
 const newName = computed(() => {
   if (!props.pokemon) return 'неизвестным';
-  const alias = getAlias(props.pokemon.id);
+  const alias = lsHashMap.getPokemonAlias(props.pokemon.id);
   return alias || props.pokemon.name;
 });
 

@@ -19,7 +19,6 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps as vueFeedCardProps } from 'vue';
 import Button from '../Button.vue';
 
 interface Feed {
@@ -30,7 +29,7 @@ interface Feed {
   action: string,
 }
 
-const props = vueFeedCardProps<Feed>();
+const props = defineProps<Feed>();
 </script>
 
 <style lang="scss" scoped>

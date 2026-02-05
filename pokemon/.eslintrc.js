@@ -25,4 +25,11 @@ module.exports = {
     //"vue/no-dupe-keys": "off",
   },
 
+  globals: {
+    defineProps: 'readonly',
+    defineEmits: 'readonly',
+    defineExpose: 'readonly',
+    withDefaults: 'readonly'
+  },
+
 };

@@ -1,11 +1,20 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { useAuthStore } from './AuthStore';
 import { lsHashMap } from './lsHashMap';
 
 export interface Pokemon {
   id: number,
   name: string,
-  sprite: string,
+  image: string,
+  weight: number,
+  money: number, 
+}
+
+export interface UserPokemon extends Pokemon {
+  newName: string;
+  earned: number;
+  age: string;
 }
 
 export const useUserStore = defineStore('user', () => {

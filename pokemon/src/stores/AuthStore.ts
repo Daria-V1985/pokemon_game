@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
+import { useUserStore } from './useUserStore';
 import { lsHashMap } from './lsHashMap'; 
 
 export interface AuthUser {
@@ -10,18 +11,26 @@ export interface AuthUser {
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null);
   const loading = ref(false);
+  const isAuth = ref(false);
   const error = ref<string | null>(null);
 
   const loadAuthData = () => {
     const savedAuth = lsHashMap.get('authUser');
     if (savedAuth) {
         user.value = savedAuth;
+        isAuth.value = true;
+
+        const userId = savedAuth.id;
+        const userStore = useUserStore();
+        userStore.loadUserData(userId);
     }
   };
 
   const saveAuthData = () => {
     if (user.value) {
       lsHashMap.set('authUser', user.value);
+    } else {
+      lsHashMap.remove('authUser');
     }
   };
 
@@ -32,22 +41,30 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
 
+      if (!cred.login.trim()) {
+        throw new Error('Логин не может быть пустым');
+      }
+
       if (cred.password.length < 8) {
         throw new Error('Пароль слишком короткий');
       }
       const authUser: AuthUser = {
         id: Date.now().toString(),
-        login: cred.login,
+        login: cred.login.trim(),
       };
 
       user.value = authUser;
+      isAuth.value = true;
+      
       const userStore = useUserStore();
       userStore.initNewUser();
+      userStore.saveUserData(authUser.id);
       saveAuthData();
-      userStore.saveUserData();
+      
       return authUser;
     } catch (err) {
         error.value = err instanceof Error ? err.message : 'Ошибка авторизации';
+        isAuth.value = false;
         throw err;
     } finally {
         loading.value = false;
@@ -55,19 +72,29 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const logoutUser = () => {
+    if (user.value) {
+      const userStore = useUserStore();
+      userStore.initNewUser();
+      lsHashMap.remove(`userData_${user.value.id}`);
+    }
+
     user.value = null;
-    const userStore = useUserStore();
-    userStore.initNewUser();
+    isAuth.value = false;
     saveAuthData();
-    userStore.saveUserData();
   };
+
+  const userId = () => user.value?.id || null;
+  const userLogin = () => user.value?.login || null;
 
   return { 
     user, 
+    isAuth,
     loadAuthData,
     saveAuthData,
     loginUser,
     logoutUser,
+    userId,
+    userLogin,
     loading, 
     error
   };
