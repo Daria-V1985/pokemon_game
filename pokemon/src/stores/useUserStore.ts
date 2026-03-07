@@ -1,43 +1,21 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import { useAuthStore } from './AuthStore';
+import { ref, computed } from 'vue';
 import { lsHashMap } from './lsHashMap';
-
-export interface Pokemon {
-  id: number,
-  name: string,
-  image: string,
-  weight: number,
-  money: number, 
-}
-
-export interface UserPokemon extends Pokemon {
-  newName: string;
-  earned: number;
-  age: string;
-}
+import { pokemonService, type Pokemon } from '@/services/pokemonService';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
   const pokemons = ref<Pokemon[]>([]);
   const isInitial = ref(false);
-  
-  const hasData = computed(() => isInitial.value && (money.value > 0 || pokemons.value.length > 0));
 
-  const initNewUser = () => {
-    money.value = 0;
-    pokemons.value = [];
-    isInitial.value = true;
-  };
-
-  const loadUserData = (userId: string) => {
+  const loadUserData = async (userId: string) => {
     const data = lsHashMap.get(`userData_${userId}`);
     if (data) {
       try {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
         isInitial.value = true;
-        console.log('Данные пользователя загружены');
+        console.log('Данные пользователя загружены из LS');
       } catch (err) {
         console.error('Не удалось обработать данные:', err);
         initNewUser();
@@ -56,7 +34,13 @@ export const useUserStore = defineStore('user', () => {
       pokemons: pokemons.value,
     };
     lsHashMap.set(`userData_${userId}`, userData);  
-    console.log('Данные пользователя сохранены');
+    console.log('Данные пользователя сохранены в LS');
+  };
+
+  const initNewUser = () => {
+    money.value = 0;
+    pokemons.value = [];
+    isInitial.value = true;
   };
 
   const addMoney = (sum: number) => {
@@ -98,7 +82,6 @@ export const useUserStore = defineStore('user', () => {
     money,
     pokemons,
     isInitial,
-    hasData,
     initNewUser,
     loadUserData,
     saveUserData,

@@ -20,7 +20,7 @@ onMounted(() => {
       userStore.money = savedUser.money || 0;
       userStore.pokemons = savedUser.pokemons || [];
       userStore.isInitial = true;
-      console.log('Данные пользователя загружены для:', authStore.user.id);
+      console.log('Данные пользователя загружены для:', authStore.user.login);
     }
   }
 });
@@ -31,7 +31,7 @@ onBeforeUnmount (() => {
       money: userStore.money,
       pokemons: userStore.pokemons,
     });
-    console.log('Данные пользователя сохранены для:', authStore.user.id);
+    console.log('Данные пользователя сохранены для:', authStore.user.login);
     
   }
 });
