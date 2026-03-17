@@ -42,23 +42,16 @@ import Input from "@/components/Input.vue";
 
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
-import { useRegStore } from '@/stores/RegStore'
+import { useRegStore } from '@/stores/RegStore';
+//import { useUserStore } from "@/stores/useUserStore";
+import { useAuthStore } from '@/stores/AuthStore'
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
 
 const showErrors = ref(false);
 const router = useRouter();
 const regStore = useRegStore();
-
-interface AuthUser {
-  id: string | number;
-  name: string;
-}
-
-interface UnifiedState {
-  money: number;
-  pokemons: any[];
-}
+const authStore = useAuthStore();
 
 const signUpSchema = yup.object({
   regLogin: yup.string().required("Логин обязателен!"),
@@ -84,22 +77,18 @@ const onSubmit = handleSubmit(async (values) => {
       password: values.regPass,
       agPass: values.agPass 
     });
-    const userId = registeredUser?.id || Date.now().toString() + Math.random().toString(36).substr(2, 9); 
-    const username = values.regLogin;
-    const authUser: AuthUser = {
-      id: userId,
-      name: username,
-    };
-    const LS_KEY = `qwery_${username}`;
-    const initialState: UnifiedState = {
-      money: 0,  
-      pokemons: [],  
-    };
-    localStorage.setItem(LS_KEY, JSON.stringify(initialState));
-    console.log(`Регистрация успешна! Сохранено в LS под ключом: ${LS_KEY}`, initialState);
-    localStorage.setItem('authUser', JSON.stringify(authUser));
-    alert('Регистрация успешна! Перейдите на вкладку "Вход"');
-    router.push('/');
+    if (registeredUser) {
+      authStore.user = registeredUser;
+      authStore.isAuth = true;
+      authStore.saveAuthData();
+
+      //const userStore = useUserStore();
+      //userStore.loadUserData(values.regLogin);
+
+      console.log(`Регистрация успешна! Пользователь: ${registeredUser.login}`);
+      alert('Регистрация успешна! Вы автоматически вошли в систему.');
+      router.push('/main');
+    }
   } catch {
     showErrors.value = true;
   }

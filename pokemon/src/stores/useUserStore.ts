@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { lsHashMap } from './lsHashMap';
 import { pokemonService, type Pokemon } from '@/services/pokemonService';
 
@@ -8,8 +8,8 @@ export const useUserStore = defineStore('user', () => {
   const pokemons = ref<Pokemon[]>([]);
   const isInitial = ref(false);
 
-  const loadUserData = async (userId: string) => {
-    const data = lsHashMap.get(`userData_${userId}`);
+  const loadUserData = (userLogin: string) => {
+    const data = lsHashMap.get(`userData_${userLogin}`);
     if (data) {
       try {
         money.value = data.money || 0;
@@ -26,22 +26,37 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  const saveUserData = (userId: string) => {
+  const saveUserData = (userLogin: string) => {
     if (!isInitial.value) return;
       
     const userData = {
       money: money.value,
       pokemons: pokemons.value,
     };
-    lsHashMap.set(`userData_${userId}`, userData);  
+    lsHashMap.set(`userData_${userLogin}`, userData);  
     console.log('Данные пользователя сохранены в LS');
   };
 
-  const initNewUser = () => {
-    money.value = 0;
+  const initNewUser = (resMoney: boolean = true) => {
+    if (resMoney) {
+      money.value = 0;
+    }
     pokemons.value = [];
     isInitial.value = true;
   };
+
+  const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {
+    money.value = data.money;
+    pokemons.value = data.pokemons;
+    isInitial.value = true;
+    saveUserData(userLogin);
+  };
+
+  const setMoney = (amount: number) => {
+    if (amount >= 0) {
+      money.value = amount;
+    }
+  }
 
   const addMoney = (sum: number) => {
     money.value += sum;
@@ -57,18 +72,12 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  const setMoney = (amount: number) => {
-    if (amount >= 0) {
-      money.value = amount;
-    }
-  };
-
   const addPokemon = (pokemon: Pokemon) => {
     pokemons.value.push(pokemon);
   };
 
   const removePokemon = (pokemonId: number) => {
-    const index = pokemons.value.findIndex(p => p.id === pokemonId);
+    const index = pokemons.value.findIndex(pok => pok.id === pokemonId);
     if (index !== -1) {
       pokemons.value.splice(index, 1);
     }
@@ -85,6 +94,7 @@ export const useUserStore = defineStore('user', () => {
     initNewUser,
     loadUserData,
     saveUserData,
+    setInitialData,
     addMoney,
     incrementMoney,
     decrementMoney,
