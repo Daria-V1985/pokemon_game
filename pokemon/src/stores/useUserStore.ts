@@ -18,11 +18,9 @@ export const useUserStore = defineStore('user', () => {
         console.log('Данные пользователя загружены из LS');
       } catch (err) {
         console.error('Не удалось обработать данные:', err);
-        initNewUser();
       }
     } else {
       console.log('Сохраненных данных пользователя не найдено');
-      initNewUser();
     }
   };
 
@@ -38,18 +36,33 @@ export const useUserStore = defineStore('user', () => {
   };
 
   const initNewUser = (resMoney: boolean = true) => {
+    console.log('initNewUser вызван. Текущие данные:', {
+      money: money.value,
+      pokemons: pokemons.value.length
+    });
+
     if (resMoney) {
       money.value = 0;
     }
     pokemons.value = [];
     isInitial.value = true;
+
+    console.log('initNewUser завершен. Новые данные:', {
+      money: money.value,
+      pokemons: pokemons.value.length
+    });
   };
 
   const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {
+    console.log('setInitialData вызван с:', data, userLogin);
+    
     money.value = data.money;
     pokemons.value = data.pokemons;
     isInitial.value = true;
     saveUserData(userLogin);
+
+    const checkData = lsHashMap.get(`userData_${userLogin}`);
+    console.log('Данные после сохранения:', checkData);
   };
 
   const setMoney = (amount: number) => {

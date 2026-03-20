@@ -60,17 +60,15 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error('Пользователь с таким логином не найден');
       }
 
-      console.log('4. Устанавливаем пользователя в store...');
-      user.value = existingUser;
-      isAuth.value = true;
-      console.log('5. Загружаем данные пользователя...');
-      const userStore = useUserStore();
-      userStore.loadUserData(cred.login.trim());
-      console.log('6. Сохраняем auth данные...');
-      saveAuthData();
+      if (existingUser) {
+        user.value = existingUser;
+        isAuth.value = true;
+        const userStore = useUserStore();
+        userStore.loadUserData(cred.login.trim());
+        saveAuthData();
 
-      console.log('✅ Авторизация успешна!');
-      return existingUser;
+        return existingUser;
+      }
     } catch (err) {
         error.value = err instanceof Error ? err.message : 'Ошибка авторизации';
         isAuth.value = false;
@@ -84,12 +82,17 @@ export const useAuthStore = defineStore('auth', () => {
     if (user.value) {
       const userStore = useUserStore();
       userStore.saveUserData(user.value.login);
-      userStore.initNewUser();
+      setTimeout(() => {
+        userStore.initNewUser();
+        user.value = null;
+        isAuth.value = false;
+        saveAuthData();
+      }, 100);
+    } else {
+      user.value = null;
+      isAuth.value = false;
+      saveAuthData();
     }
-
-    user.value = null;
-    isAuth.value = false;
-    saveAuthData();
   };
 
   const userId = () => user.value?.id || null;

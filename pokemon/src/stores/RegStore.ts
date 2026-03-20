@@ -42,8 +42,10 @@ export const useRegStore = defineStore('register', () => {
       initData.pokemons.push(randomPokemon);
       console.log(`Новому пользователю добавлен покемон: ${randomPokemon.name}`);
     }
+    console.log(`Сохранение данных для ${userLogin}:`, 'данные:', initData);
     userStore.setInitialData(initData, userLogin);
-    console.log(`✅ Инициализирован новый пользователь ID: ${userLogin}`);
+    const savedData = lsHashMap.get(`userData_${userLogin}`);
+    console.log('Проверка сохранения:', savedData);
   };
 
   const registerUser = async (cred: { login: string; password: string; agPass: string }) => {
@@ -75,7 +77,7 @@ export const useRegStore = defineStore('register', () => {
       registerUserData(newUser);
 
       console.log("5. Инициализируем данные...");
-      initializeNewUser(newUser.id);
+      initializeNewUser(newUser.login);
 
       console.log(`✅ Новый пользователь зарегистрирован: ${newUser.login}`);
       return newUser;
