@@ -30,22 +30,35 @@ export const useRegStore = defineStore('register', () => {
   };
 
   const initializeNewUser = (userLogin: string) => {
+    console.log('=== ИНИЦИАЛИЗАЦИЯ НОВОГО ПОЛЬЗОВАТЕЛЯ ===');
+    console.log('Логин:', userLogin);
     const userStore = useUserStore();
     
     const initData = {
       money: 100,
       pokemons: [] as Pokemon[],
     };
-    
-    const randomPokemon = getRandomPokemon();
-    if (randomPokemon) {
+
+    const allPokemons = pokemonService.getAllPokemons();
+    console.log('Все покемоны в LS:', allPokemons);
+    console.log('Количество покемонов в LS:', allPokemons.length);
+    console.log('Всего покемонов доступно:', allPokemons.length);
+  
+    if (allPokemons.length > 0) {
+      const randomIndex = Math.floor(Math.random() * allPokemons.length);
+      const randomPokemon = { ...allPokemons[randomIndex] };
+      console.log('Выбранный покемон:', randomPokemon.name);
+      
       initData.pokemons.push(randomPokemon);
-      console.log(`Новому пользователю добавлен покемон: ${randomPokemon.name}`);
+      console.log('Добавлен 1 покемон в initialData');
+      console.log('Данные для сохранения:', initData);
+    } else {
+      console.warn('В LS нет покемонов для добавления');
     }
-    console.log(`Сохранение данных для ${userLogin}:`, 'данные:', initData);
+    
+    console.log('Данные перед установкой:', initData);
     userStore.setInitialData(initData, userLogin);
-    const savedData = lsHashMap.get(`userData_${userLogin}`);
-    console.log('Проверка сохранения:', savedData);
+    console.log('=== ЗАВЕРШЕНИЕ ИНИЦИАЛИЗАЦИИ ===');
   };
 
   const registerUser = async (cred: { login: string; password: string; agPass: string }) => {
@@ -53,6 +66,16 @@ export const useRegStore = defineStore('register', () => {
     error.value = null;
     
     try {
+
+      console.log('Загружаем покемонов из API...');
+      await pokemonService.loadAllPokemons();
+      
+      const allPokemons = pokemonService.getAllPokemons();
+      console.log('Покемонов доступно:', allPokemons.length);
+    
+    if (allPokemons.length === 0) {
+      console.warn('Покемоны не загружены!');
+    }
       console.log("1. Начало регистрации...");
       if (cred.password !== cred.agPass) {
         throw new Error('Пароли не совпадают');
@@ -77,9 +100,9 @@ export const useRegStore = defineStore('register', () => {
       registerUserData(newUser);
 
       console.log("5. Инициализируем данные...");
-      initializeNewUser(newUser.login);
+      initializeNewUser(cred.login.trim());
 
-      console.log(`✅ Новый пользователь зарегистрирован: ${newUser.login}`);
+      console.log(`Новый пользователь зарегистрирован: userData_${cred.login.trim()}`);
       return newUser;
     } catch (err: unknown) {
       error.value = err instanceof Error ? err.message : 'Ошибка регистрации';
