@@ -36,7 +36,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const findUserByLogin = (login: string): AuthUser | null => {
     const existingUsers = lsHashMap.get('registeredUsers') || [];
-    console.log('Поиск пользователя:', login, 'в массиве:', existingUsers);
     return existingUsers.find((user: any) => user.login === login) || null;
   };
 
@@ -95,7 +94,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const userId = () => user.value?.id || null;
   const userLogin = () => user.value?.login || null;
 
   return { 
@@ -105,7 +103,6 @@ export const useAuthStore = defineStore('auth', () => {
     saveAuthData,
     loginUser,
     logoutUser,
-    userId,
     userLogin,
     loading, 
     error

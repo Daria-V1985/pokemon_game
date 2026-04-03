@@ -14,8 +14,8 @@ onMounted(() => {
     console.log('Данные авторизации загружены через lsHashMap');
   }
 
-  if (authStore.user?.id) {
-    const savedUser = lsHashMap.get(`userData_${authStore.user.id}`);
+  if (authStore.user?.login) {
+    const savedUser = lsHashMap.get(`userData_${authStore.user.login}`);
     if (savedUser) {
       userStore.money = savedUser.money || 0;
       userStore.pokemons = savedUser.pokemons || [];
@@ -26,8 +26,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount (() => {
-  if (authStore.user?.id && userStore.isInitial) {
-    lsHashMap.set(`userData_${authStore.user.id}`, {
+  if (authStore.user?.login && userStore.isInitial) {
+    lsHashMap.set(`userData_${authStore.user.login}`, {
       money: userStore.money,
       pokemons: userStore.pokemons,
     });
@@ -41,8 +41,8 @@ window.addEventListener('beforeunload', () => {
     lsHashMap.set('authUser', authStore.user);
   }
   
-  if (authStore.user?.id && userStore.isInitial) {
-    lsHashMap.set(`userData_${authStore.user.id}`, {
+  if (authStore.user?.login && userStore.isInitial) {
+    lsHashMap.set(`userData_${authStore.user.login}`, {
       money: userStore.money,
       pokemons: userStore.pokemons
     });

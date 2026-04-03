@@ -19,80 +19,90 @@ class PokemonService {
       console.log('Покемоны уже загружены');
       return;
     } 
-    console.log('Загрузка покемонов из API...');
+    console.log('=== НАЧАЛО ЗАГРУЗКИ ПОКЕМОНОВ ===');
 
     try {
+      console.log('1. Делаем запрос к API...');
       const response = await fetch('https://9d6066f5473655c8.mokky.dev/pokemons');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      console.log('API ответил, статус:', response.status);
       const data = await response.json();
-      console.log('Данные от API:', data);
-      if (!data || typeof data !== 'object') {
-        throw new Error('Некорректный формат данных от API');
-      }
       
-      let pokemonsArray: any[] = [];
+      console.log('2. Данные получены:');
+      console.log('   Тип:', typeof data);
+      console.log('   Это массив?', Array.isArray(data));
+      console.log('   Количество покемонов:', Array.isArray(data) ? data.length : 'N/A');
 
-      if (Array.isArray(data)) {
-        // Если API возвращает массив напрямую
-        pokemonsArray = data;
-      } else if (data.results && Array.isArray(data.results)) {
-        // Если API возвращает объект с полем results
-        pokemonsArray = data.results;
-      } else if (data.pokemons && Array.isArray(data.pokemons)) {
-        // Если API возвращает объект с полем pokemons
-        pokemonsArray = data.pokemons;
-      } else {
-        throw new Error('Неизвестная структура данных от API');
+      if (Array.isArray(data) && data.length > 0) {
+        console.log('3. Первый элемент массива:', data[0]);
+        console.log('Ключи первого элемента:', Object.keys(data[0]));
       }
-      
-      console.log(`Найдено покемонов: ${pokemonsArray.length}`);
 
-      const pokemons: Pokemon[] = await Promise.all(
-        data.results.map(async (pokemon: any, index: number) => {
-          const detailsResponse = await fetch(pokemon.url);
-          const details = await detailsResponse.json();
-          let imageUrl = details.sprites.front_default;
+      console.log('4. Проверяем структуру данных...');
 
-          if (!imageUrl) {
-            imageUrl = `https://9d6066f5473655c8.mokky.dev/pokemon/${details.id}.png`;
-          }
-          
-          console.log(`Покемон ${details.name}:`, imageUrl);
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Нет данных для обработки');
+      }
+
+      const pokemons: Pokemon[] = data.map((pokemon: any, index: number) => {
+          let imageUrl = pokemon.image;
+
+          if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+          imageUrl = '/' + imageUrl;
+        }
+        
+        if (imageUrl && !imageUrl.startsWith('http')) {
+          imageUrl = `http://192.168.0.102:8080${imageUrl}`;
+        }
 
           return {
-            id: details.id,
-            name: details.name,
-            image: imageUrl,
-            weight: details.weight,
-            money: Math.floor(Math.random() * 1000) + 100,
-            earned: 0, 
-            age: '1 день' 
+            id: pokemon.id,
+            name: pokemon.name,
+            image: `http://localhost:8080/${pokemon.image}`,
+            weight: pokemon.weight,
+            money: pokemon.money,
+            earned: pokemon.earned, 
+            age: pokemon.age 
           };
-        })
-      );
+        });
 
-      lsHashMap.set(this.POKEMONS_KEY, pokemons);
+      console.log(`5. Обработано ${pokemons.length} покемонов`);
+      console.log('   Пример покемона:', pokemons[0]);
+
+      console.log('6. Сохраняем в LocalStorage...');
+      const key = this.POKEMONS_KEY;
+      localStorage.setItem(key, JSON.stringify(pokemons));
+      console.log(`Сохранено напрямую в localStorage под ключом "${key}"`);
+      console.log(`Ключ "${key}" создан с ${pokemons.length} покемонами`);
+
+      lsHashMap.set(key, pokemons);
+      lsHashMap.flush(key);
+      
       this.isLoaded = true;
       console.log(`Загружено ${pokemons.length} покемонов в LS`);
 
-      const savedData = lsHashMap.get(this.POKEMONS_KEY);
-      console.log(`Сохранено ${savedData?.length || 0} покемонов под ключом: ${this.POKEMONS_KEY}`);
+      console.log('7. Проверяем сохранение...');
+      const savedData = lsHashMap.get(key);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        console.log(`   🎉 УСПЕХ! В LS сохранено ${parsed.length} покемонов`);
+      } else {
+        console.error('   ❌ ОШИБКА: Данные не сохранились!');
+      }
+      
+      console.log('=== ЗАГРУЗКА ЗАВЕРШЕНА ===');
     } catch (error) {
-      console.error('Ошибка загрузки покемонов:', error);
+      console.warn('Ошибка загрузки покемонов:', error);
+      this.isLoaded = false;
     }
   }
 
   getAllPokemons(): Pokemon[] {
     const cached = lsHashMap.get(this.POKEMONS_KEY);
-    console.log(`Поиск покемонов по ключу: ${this.POKEMONS_KEY}, найдено: ${cached?.length || 0}`);
     return cached && Array.isArray(cached) ? cached : [];
   }
 
-  getUserPokemons (userId: string): Pokemon[] {
-    const userData = lsHashMap.get(`userData_${userId}`);
+  getUserPokemons (userLogin: string): Pokemon[] {
+    const userData = lsHashMap.get(`userData_${userLogin}`);
     return userData?.pokemons || [];
   }
 

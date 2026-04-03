@@ -5,7 +5,7 @@
       :key="pokemon.id"
       :id="pokemon.id"
       :name="pokemon.name"
-      :image="getValidImageUrl(pokemon.image)"
+      :image="pokemon.image"
       :weight="pokemon.weight"
       :money="pokemon.money"
       @click="openSettings(pokemon.id)"
@@ -85,21 +85,6 @@ const updatePokemonInfo = async (updatedPokemon: Pokemon) => {
 
   loadUserPokemons();
   console.log('Данные покемона обновлены');
-};
-
-const getValidImageUrl = (imageUrl: string | undefined): string => {
-  if (!imageUrl) {
-    return '/images/pokemon-placeholder.png';
-  }
-  
-  if (imageUrl.startsWith('http')) {
-    return imageUrl;
-  }
-  
-  if (imageUrl.startsWith('//')) {
-    return `https:${imageUrl}`;
-  }
-  return imageUrl;
 };
 
 onMounted(() => {

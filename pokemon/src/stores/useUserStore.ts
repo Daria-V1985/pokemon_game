@@ -15,66 +15,40 @@ export const useUserStore = defineStore('user', () => {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
         isInitial.value = true;
-        console.log('Данные пользователя загружены из LS');
       } catch (err) {
         console.error('Не удалось обработать данные:', err);
       }
     } else {
-      console.log('Сохраненных данных пользователя не найдено');
+      console.warn('Сохраненных данных пользователя не найдено');
     }
   };
 
   const saveUserData = (userLogin: string) => {
-    console.log('saveUserData вызван для:', userLogin);
-    if (!isInitial.value) {
-      console.log('Store не инициализирован, пропускаем сохранение');
-      return;
-    }
+    if (!isInitial.value) return;
       
     const userData = {
       money: money.value,
       pokemons: pokemons.value,
     };
-    console.log('Сохраняемые данные:', userData);
     lsHashMap.set(`userData_${userLogin}`, userData);  
-    console.log('Данные пользователя сохранены в LS');
-
     const savedData = lsHashMap.get(`userData_${userLogin}`);
-    console.log('Проверка сохранения:', savedData);
   };
 
   const initNewUser = (resMoney: boolean = true) => {
-    console.log('initNewUser вызван. Текущие данные:', {
-      money: money.value,
-      pokemons: pokemons.value.length
-    });
-
     if (resMoney) {
       money.value = 0;
     }
     pokemons.value = [];
     isInitial.value = true;
-
-    console.log('initNewUser завершен. Новые данные:', {
-      money: money.value,
-      pokemons: pokemons.value.length
-    });
   };
 
-  const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {
-    console.log('setInitialData вызван с:', data);
-    console.log('Логин пользователя:', userLogin);
-    
+  const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {    
     money.value = data.money;
     pokemons.value = [...data.pokemons];
     isInitial.value = true;
-
-    console.log('Данные до сохранения:', { money: money.value, pokemons: pokemons.value });
     saveUserData(userLogin);
-    console.log('Данные после сохранения:', { money: money.value, pokemons: pokemons.value });
 
     const checkData = lsHashMap.get(`userData_${userLogin}`);
-    console.log('Данные после сохранения:', checkData);
   };
 
   const setMoney = (amount: number) => {
