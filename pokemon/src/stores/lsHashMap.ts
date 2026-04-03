@@ -1,3 +1,5 @@
+import UserLogin from "@/components/UserLogin.vue";
+
 class LSHashMap {
   static instance: LSHashMap;
   cache: Map<string, any> = new Map();
@@ -119,8 +121,8 @@ class LSHashMap {
     return this.get('authUser') as { id: string, login: string } | null;
   }
 
-  getUserData(userId: string) {
-    return this.get(`userData_${userId}`) as {
+  getUserData(userLogin: string) {
+    return this.get(`userData_${userLogin}`) as {
       money: number;
       pokemons: any[];
     } | null;

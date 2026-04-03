@@ -41,7 +41,6 @@ import * as yup from "yup";
 const showErrors = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
-const userStore = useUserStore();
 
 const signInSchema = yup.object({  
   authLogin: yup.string().required("Логин обязателен!"),
@@ -58,21 +57,28 @@ const { handleSubmit, values, errors, setFieldValue } = useForm({
 
 const onSubmit = handleSubmit(async (values) => {
   try {
+    console.log('Попытка входа:', values.authLogin);
     await authStore.loginUser({ 
       login: values.authLogin, 
       password: values.password 
     });
 
-    console.log('Полный объект пользователя:', authStore.user);
-    console.log('Все поля:', Object.keys(authStore.user || {}));
+    console.log('Авторизация прошла успешно!');
 
-    if (authStore.user && userStore.isInitial) {
-      alert(`Авторизация успешна!\nПользователь: ${authStore.user.login}`);
+    if (authStore.isAuth && authStore.user) {
+      console.log('✅ Авторизация успешна:', authStore.user);
+      
+      const userStore = useUserStore();
+      console.log('Деньги пользователя:', userStore.money);
+      console.log('Покемоны пользователя:', userStore.pokemons.length);
+      
+      alert(`Авторизация успешна! Добро пожаловать, ${authStore.user.login}!`);
       router.push('/main');
     } else {
       throw new Error('Ошибка инициализации пользовательских данных');
     }
   } catch (err) {
+    console.error('Ошибка в компоненте SignIn:', err);
     showErrors.value = true;
     console.error('Ошибка авторизации:', err);
     alert(err instanceof Error ? err.message : 'Ошибка авторизации');

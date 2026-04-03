@@ -1,63 +1,61 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import { useAuthStore } from './AuthStore';
+import { ref } from 'vue';
 import { lsHashMap } from './lsHashMap';
-
-export interface Pokemon {
-  id: number,
-  name: string,
-  image: string,
-  weight: number,
-  money: number, 
-}
-
-export interface UserPokemon extends Pokemon {
-  newName: string;
-  earned: number;
-  age: string;
-}
+import { pokemonService, type Pokemon } from '@/services/pokemonService';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
   const pokemons = ref<Pokemon[]>([]);
   const isInitial = ref(false);
-  
-  const hasData = computed(() => isInitial.value && (money.value > 0 || pokemons.value.length > 0));
 
-  const initNewUser = () => {
-    money.value = 0;
-    pokemons.value = [];
-    isInitial.value = true;
-  };
-
-  const loadUserData = (userId: string) => {
-    const data = lsHashMap.get(`userData_${userId}`);
+  const loadUserData = (userLogin: string) => {
+    const data = lsHashMap.get(`userData_${userLogin}`);
     if (data) {
       try {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
         isInitial.value = true;
-        console.log('Данные пользователя загружены');
       } catch (err) {
         console.error('Не удалось обработать данные:', err);
-        initNewUser();
       }
     } else {
-      console.log('Сохраненных данных пользователя не найдено');
-      initNewUser();
+      console.warn('Сохраненных данных пользователя не найдено');
     }
   };
 
-  const saveUserData = (userId: string) => {
+  const saveUserData = (userLogin: string) => {
     if (!isInitial.value) return;
       
     const userData = {
       money: money.value,
       pokemons: pokemons.value,
     };
-    lsHashMap.set(`userData_${userId}`, userData);  
-    console.log('Данные пользователя сохранены');
+    lsHashMap.set(`userData_${userLogin}`, userData);  
+    const savedData = lsHashMap.get(`userData_${userLogin}`);
   };
+
+  const initNewUser = (resMoney: boolean = true) => {
+    if (resMoney) {
+      money.value = 0;
+    }
+    pokemons.value = [];
+    isInitial.value = true;
+  };
+
+  const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {    
+    money.value = data.money;
+    pokemons.value = [...data.pokemons];
+    isInitial.value = true;
+    saveUserData(userLogin);
+
+    const checkData = lsHashMap.get(`userData_${userLogin}`);
+  };
+
+  const setMoney = (amount: number) => {
+    if (amount >= 0) {
+      money.value = amount;
+    }
+  }
 
   const addMoney = (sum: number) => {
     money.value += sum;
@@ -73,18 +71,12 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  const setMoney = (amount: number) => {
-    if (amount >= 0) {
-      money.value = amount;
-    }
-  };
-
   const addPokemon = (pokemon: Pokemon) => {
     pokemons.value.push(pokemon);
   };
 
   const removePokemon = (pokemonId: number) => {
-    const index = pokemons.value.findIndex(p => p.id === pokemonId);
+    const index = pokemons.value.findIndex(pok => pok.id === pokemonId);
     if (index !== -1) {
       pokemons.value.splice(index, 1);
     }
@@ -98,10 +90,10 @@ export const useUserStore = defineStore('user', () => {
     money,
     pokemons,
     isInitial,
-    hasData,
     initNewUser,
     loadUserData,
     saveUserData,
+    setInitialData,
     addMoney,
     incrementMoney,
     decrementMoney,

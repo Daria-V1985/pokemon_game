@@ -20,9 +20,9 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = savedAuth;
         isAuth.value = true;
 
-        const userId = savedAuth.id;
+        const userLogin = savedAuth.login;
         const userStore = useUserStore();
-        userStore.loadUserData(userId);
+        userStore.loadUserData(userLogin);
     }
   };
 
@@ -32,6 +32,11 @@ export const useAuthStore = defineStore('auth', () => {
     } else {
       lsHashMap.remove('authUser');
     }
+  };
+
+  const findUserByLogin = (login: string): AuthUser | null => {
+    const existingUsers = lsHashMap.get('registeredUsers') || [];
+    return existingUsers.find((user: any) => user.login === login) || null;
   };
 
   const loginUser = async (cred: {login: string; password: string}) => {
@@ -48,20 +53,21 @@ export const useAuthStore = defineStore('auth', () => {
       if (cred.password.length < 8) {
         throw new Error('Пароль слишком короткий');
       }
-      const authUser: AuthUser = {
-        id: Date.now().toString(),
-        login: cred.login.trim(),
-      };
+      
+      const existingUser = findUserByLogin(cred.login.trim());
+      if (!existingUser) {
+        throw new Error('Пользователь с таким логином не найден');
+      }
 
-      user.value = authUser;
-      isAuth.value = true;
-      
-      const userStore = useUserStore();
-      userStore.initNewUser();
-      userStore.saveUserData(authUser.id);
-      saveAuthData();
-      
-      return authUser;
+      if (existingUser) {
+        user.value = existingUser;
+        isAuth.value = true;
+        const userStore = useUserStore();
+        userStore.loadUserData(cred.login.trim());
+        saveAuthData();
+
+        return existingUser;
+      }
     } catch (err) {
         error.value = err instanceof Error ? err.message : 'Ошибка авторизации';
         isAuth.value = false;
@@ -74,16 +80,20 @@ export const useAuthStore = defineStore('auth', () => {
   const logoutUser = () => {
     if (user.value) {
       const userStore = useUserStore();
-      userStore.initNewUser();
-      lsHashMap.remove(`userData_${user.value.id}`);
+      userStore.saveUserData(user.value.login);
+      setTimeout(() => {
+        userStore.initNewUser();
+        user.value = null;
+        isAuth.value = false;
+        saveAuthData();
+      }, 100);
+    } else {
+      user.value = null;
+      isAuth.value = false;
+      saveAuthData();
     }
-
-    user.value = null;
-    isAuth.value = false;
-    saveAuthData();
   };
 
-  const userId = () => user.value?.id || null;
   const userLogin = () => user.value?.login || null;
 
   return { 
@@ -93,7 +103,6 @@ export const useAuthStore = defineStore('auth', () => {
     saveAuthData,
     loginUser,
     logoutUser,
-    userId,
     userLogin,
     loading, 
     error
