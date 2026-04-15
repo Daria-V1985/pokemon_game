@@ -2,7 +2,8 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useUserStore } from '@/stores/useUserStore';
 import { lsHashMap } from './lsHashMap';
-import { pokemonService, type Pokemon } from '@/services/pokemonService';
+import { pokemonService } from '@/services/pokemonService';
+import { Pokemon } from '@/types/pokemon';
 
 export const useRegStore = defineStore('register', () => {
   const loading = ref(false);

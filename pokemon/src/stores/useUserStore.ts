@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { lsHashMap } from './lsHashMap';
-import { pokemonService, type Pokemon } from '@/services/pokemonService';
+import { Pokemon } from '@/types/pokemon';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);

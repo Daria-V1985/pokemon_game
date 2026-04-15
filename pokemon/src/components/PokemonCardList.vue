@@ -5,6 +5,7 @@
       :key="pokemon.id"
       :id="pokemon.id"
       :name="pokemon.name"
+      :view="pokemon.view"
       :image="pokemon.image"
       :weight="pokemon.weight"
       :money="pokemon.money"
@@ -23,19 +24,10 @@
 import { ref, onMounted, watch } from "vue";
 import { useAuthStore } from "@/stores/AuthStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { pokemonService } from "@/services/pokemonService" 
+import { Pokemon } from "@/types/pokemon";
 import PokemonCard from './PokemonCard.vue';
 import PokemonModal from './PokemonModal.vue';
-import { lsHashMap } from "@/stores/lsHashMap";
-
-interface Pokemon {
-  id: number,
-  name: string,
-  image: string,
-  weight: number,
-  money: number,
-  earned: number,
-  age: string,
-}
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -43,26 +35,36 @@ const userPokemons = ref<Pokemon[]>([]);
 const showModal = ref(false);
 const selectedPokemon = ref<Pokemon | null>(null);
 
-const loadUserPokemons = () => {
-  console.log('Текущий пользователь:', authStore.user?.login);
-  console.log('Покемоны в userStore:', userStore.pokemons);
+const loadUserPokemons = async () => {
 
-  if (authStore.user && userStore.isInitial) {
-    userPokemons.value = [...userStore.pokemons];
-    console.log('Покемоны пользователя загружены из userStore:', userPokemons.value);
-  } else if (authStore.user) {
-    const userData = lsHashMap.get(`userData_${authStore.user.login}`);
-    userPokemons.value = userData?.pokemons || [];
-    console.log('Покемоны из LS:', userPokemons.value);
-  } else {
+  if (!authStore.user?.login) {
     userPokemons.value = [];
     console.log('Пользователь не авторизован');
+    return;
   }
-  console.log('Отображаемые покемоны:', userPokemons.value);
-}
+  try {
+    console.log(`Загрузка покемонов для ${authStore.user.login}...`);
+    const pokemonsWithDetails = await pokemonService.getUserPokemonsWithDetails(authStore.user.login);
+    
+    userPokemons.value = pokemonsWithDetails;
+    console.log(`Загружено ${pokemonsWithDetails.length} покемонов с деталями:`, pokemonsWithDetails);
+    
+    if (pokemonsWithDetails.length > 0) {
+      userStore.pokemons = [...pokemonsWithDetails];
+    }  
+  } catch (err) {
+    console.error('Ошибка загрузки покемонов:', err);
+    userPokemons.value = [];
+    
+    if (userStore.pokemons.length > 0) {
+      console.log('Используем данные из userStore как fallback');
+      userPokemons.value = [...userStore.pokemons];
+    }
+  }
+};
 
 const openSettings = (id: number): void => {
-  const pokemon = userPokemons.value.find(pokemon => pokemon.id === id)
+  const pokemon = userPokemons.value.find((pokemon: any) => pokemon.id === id)
   if (pokemon) {
     selectedPokemon.value = structuredClone(pokemon);
     showModal.value = true;
@@ -77,47 +79,43 @@ const closeSettings = () => {
 };
 
 const updatePokemonInfo = async (updatedPokemon: Pokemon) => {
-  const index = userStore.pokemons.findIndex(pokemon => pokemon.id === updatedPokemon.id);
-  if (index !== -1) {
-    userStore.pokemons[index] = updatedPokemon;
-    userStore.saveUserData(authStore.user?.login || '');
+  console.log('Обновление данных покемона:', updatedPokemon);
+  const index = userPokemons.value.findIndex((pokemon: any) => pokemon.id === updatedPokemon.id);
+  try {
+    if (index !== -1) {
+    const updatedArray = [...userPokemons.value];
+      updatedArray[index] = { ...updatedPokemon };
+      userPokemons.value = updatedArray;
+      console.log(`Покемон обновлен в локальном массиве: ${updatedPokemon.name}`);
   }
 
-  loadUserPokemons();
-  console.log('Данные покемона обновлены');
+  if (authStore.user?.login) {
+      userStore.saveUserData(authStore.user.login);
+      console.log(`Данные сохранены для ${authStore.user.login}`);
+    }
+
+  await loadUserPokemons();
+  } catch (err) {
+    console.error('Ошибка при обновлении покемона:', err);
+  }
 };
 
 onMounted(() => {
+  console.log('PokemonCardList mounted');
   loadUserPokemons();
 })
 
-watch(() => userStore.pokemons, 
-  (newPokemons) => {
-    console.log('userStore.pokemons изменился:', newPokemons);
-    userPokemons.value = [...newPokemons];
-    console.log('Отображаемые покемоны обновлены:', userPokemons.value);
-  }, { deep: true }
-);
-
-watch(() => authStore.user,
-  (newUser) => {
-    console.log('Статус авторизации изменился:', newUser);
-    if (newUser) {
-      loadUserPokemons();
-    } else {
-      userPokemons.value = [];
-    }
+watch(() => userStore.isInitial, (isInitial) => {
+  if (isInitial) {
+    console.log('UserStore инициализирован');
+    loadUserPokemons();
   }
-);
+});
 
-watch(
-  () => userStore.isInitial,
-  (isInitial) => {
-    if (isInitial) {
-      loadUserPokemons();
-    }
-  }
-);
+watch(() => authStore.user, (newUser) => {
+    console.log('Статус авторизации изменился:', newUser?.login);
+    loadUserPokemons();
+});
 
 </script>
 

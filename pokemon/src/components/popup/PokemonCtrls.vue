@@ -14,18 +14,9 @@
 </template>
 
 <script lang="ts" setup>
+import { Pokemon } from '@/types/pokemon';
 import Button from '../Button.vue';
 import SearchForm from './SearchForm.vue';
-
-interface Pokemon {
-  id: number;
-  image: string;
-  name: string;
-  weight: number;
-  money: number;
-  earned: number;
-  age: string;
-}
 
 const props = defineProps<{
   pokemon: Pokemon | null;

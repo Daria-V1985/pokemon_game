@@ -52,8 +52,11 @@ class LSHashMap {
   }
 
   get(id: string) {
+    console.log(`lsHashMap.get: "${id}"`);
     if (this.cache.has(id)) {
-      return this.cache.get(id);
+      const cached = this.cache.get(id);
+      console.log(`Возвращаем из кэша:`, cached);
+      return cached;
     }
 
     const data = localStorage.getItem(id);
@@ -61,16 +64,25 @@ class LSHashMap {
       try {
         const dataValue = JSON.parse(data);
         this.cache.set(id, dataValue);
+        console.log(`Загружено из LS и кэшировано:`, dataValue);
         return dataValue;
       } catch (err) {
         console.warn(`Не удалось обработать данные: ${id}`, err);
         return null;
       }
     }
+    console.log(`Данные не найдены для ключа: "${id}"`);
     return null;
   }
- 
+
   set (id: string, data: any) {
+    console.log(`lsHashMap.set: ключ="${id}", данные=`, data);
+    console.log(`Тип данных: ${typeof data}, это массив? ${Array.isArray(data)}`);
+
+    if (typeof data === 'object' && data !== null) {
+      console.log('Ключи объекта:', Object.keys(data));
+    }
+    
     this.cache.set(id, data);
     this.pendingWrites.add(id);
 
@@ -84,6 +96,8 @@ class LSHashMap {
   }
 
   flush(id: string) {
+    console.log(`lsHashMap.flush: "${id}"`);
+
     if (this.cache.has(id)) {
       try {
         localStorage.setItem(id, JSON.stringify(this.cache.get(id)));
@@ -91,6 +105,8 @@ class LSHashMap {
       } catch (err) {
         console.warn(`Не удалось обработать данные: ${id}`, err);
       }
+    } else {
+      console.warn(`Ключ "${id}" не найден в кэше`);
     }
   }
 
@@ -107,12 +123,14 @@ class LSHashMap {
   }
 
   remove(id: string) {
+    console.log(`Удаляем ключ: "${id}"`);
     this.cache.delete(id);
     this.pendingWrites.delete(id);
     localStorage.removeItem(id);
   }
 
   clearCache() {
+    console.log(`Очищаем кэш`);
     this.cache.clear();
     this.pendingWrites.clear();
   }

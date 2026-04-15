@@ -1,5 +1,5 @@
 <template>
-  <section class="popup" v-if="modelValue" @click.self="closeModal">
+  <section class="popup" v-if="modelValue && pokemon" @click.self="closeModal">
     <div class="popup__inner" @click.stop>
       <div :class="['popup__body', { 'open': showPopup }]">
         <div class="popup__container">
@@ -32,21 +32,12 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { lsHashMap } from "@/stores/lsHashMap"
+import { lsHashMap } from "@/stores/lsHashMap";
+import { Pokemon } from "@/types/pokemon";
 import Tabs from "@/components/Tabs.vue";
 import Feed from "@/components/popup/Feed.vue";
 import Statistics from "@/components/popup/Statistics.vue";
 import Button from "./Button.vue";
-
-interface Pokemon {
-  id: number,
-  name: string,
-  image: string,
-  weight: number,
-  money: number,
-  earned: number,
-  age: string,
-}
 
 interface Popup {
   modelValue: boolean; 

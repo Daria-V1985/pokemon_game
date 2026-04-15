@@ -6,8 +6,12 @@
       </div>
       <div class="static-info__desc info-desc">
         <div class="info-desc__item">
-          <div class="info-desc__item-title">Вид</div>
+          <div class="info-desc__item-title">Имя</div>
           <div class="info-desc__item-data">{{ newName }}</div>
+        </div>
+        <div class="info-desc__item">
+          <div class="info-desc__item-title">Вид</div>
+          <div class="info-desc__item-data">{{ pokemon.view }}</div>
         </div>
         <div class="info-desc__item">
           <div class="info-desc__item-title">Вес</div>
@@ -34,17 +38,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { lsHashMap } from "@/stores/lsHashMap"
-
-interface Pokemon {
-  id: number,
-  image: string,
-  name: string;
-  weight: number,
-  money: number,
-  earned: number,
-  age: string,
-}
+import { Pokemon } from '@/types/pokemon';
 
 const props = defineProps<{
   pokemon: Pokemon | null;
@@ -53,9 +47,7 @@ const props = defineProps<{
 }>();
 
 const newName = computed(() => {
-  if (!props.pokemon) return 'Не выбран';
-  const alias = lsHashMap.getPokemonAlias(props.pokemon.id);
-  return alias || props.pokemon.name; 
+  return props.pokemon?.name || 'Не выбран'; 
 });
 
 </script>
