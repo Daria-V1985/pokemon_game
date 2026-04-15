@@ -39,15 +39,11 @@ const loadUserPokemons = async () => {
 
   if (!authStore.user?.login) {
     userPokemons.value = [];
-    console.log('Пользователь не авторизован');
     return;
   }
   try {
-    console.log(`Загрузка покемонов для ${authStore.user.login}...`);
-    const pokemonsWithDetails = await pokemonService.getUserPokemonsWithDetails(authStore.user.login);
-    
+    const pokemonsWithDetails = await pokemonService.getUserPokemonsWithDetails(authStore.user.login);   
     userPokemons.value = pokemonsWithDetails;
-    console.log(`Загружено ${pokemonsWithDetails.length} покемонов с деталями:`, pokemonsWithDetails);
     
     if (pokemonsWithDetails.length > 0) {
       userStore.pokemons = [...pokemonsWithDetails];
@@ -57,7 +53,6 @@ const loadUserPokemons = async () => {
     userPokemons.value = [];
     
     if (userStore.pokemons.length > 0) {
-      console.log('Используем данные из userStore как fallback');
       userPokemons.value = [...userStore.pokemons];
     }
   }
@@ -79,19 +74,16 @@ const closeSettings = () => {
 };
 
 const updatePokemonInfo = async (updatedPokemon: Pokemon) => {
-  console.log('Обновление данных покемона:', updatedPokemon);
   const index = userPokemons.value.findIndex((pokemon: any) => pokemon.id === updatedPokemon.id);
   try {
     if (index !== -1) {
     const updatedArray = [...userPokemons.value];
       updatedArray[index] = { ...updatedPokemon };
       userPokemons.value = updatedArray;
-      console.log(`Покемон обновлен в локальном массиве: ${updatedPokemon.name}`);
   }
 
   if (authStore.user?.login) {
       userStore.saveUserData(authStore.user.login);
-      console.log(`Данные сохранены для ${authStore.user.login}`);
     }
 
   await loadUserPokemons();
@@ -101,13 +93,11 @@ const updatePokemonInfo = async (updatedPokemon: Pokemon) => {
 };
 
 onMounted(() => {
-  console.log('PokemonCardList mounted');
   loadUserPokemons();
 })
 
 watch(() => userStore.isInitial, (isInitial) => {
   if (isInitial) {
-    console.log('UserStore инициализирован');
     loadUserPokemons();
   }
 });

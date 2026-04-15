@@ -9,21 +9,12 @@ class PokemonService {
   private isLoaded = false;
 
   async loadAllPokemons(): Promise<void> {
-    if (this.isLoaded) {
-      console.log('Покемоны уже загружены');
-      return;
-    } 
-    console.log('=== НАЧАЛО ЗАГРУЗКИ ПОКЕМОНОВ ===');
+    if (this.isLoaded) return;
 
     try {
-      console.log('1. Делаем запрос к API...');
       const response = await fetch('https://9d6066f5473655c8.mokky.dev/pokemons');
-      console.log('API ответил, статус:', response.status);
       const data = await response.json();
       
-      console.log('2. Данные получены:');
-      console.log('   Количество покемонов:', Array.isArray(data) ? data.length : 'N/A');
-
       if (!Array.isArray(data) || data.length === 0) {
         throw new Error('Нет данных для обработки');
       }
@@ -38,19 +29,10 @@ class PokemonService {
           };
         });
 
-      console.log(`3. Сохраняем ${pokemons.length} базовых записей в LS...`);
-      console.log('Пример базовой записи:', pokemons[0]);
-
       const key = this.POKEMONS_KEY;
-      localStorage.setItem(key, JSON.stringify(pokemons));
-      console.log(`Сохранено напрямую в localStorage под ключом "${key}"`);
-      console.log(`Ключ "${key}" создан с ${pokemons.length} покемонами`);
-      
+      localStorage.setItem(key, JSON.stringify(pokemons));      
       this.isLoaded = true;
-      console.log(`Загружено ${pokemons.length} покемонов в LS`);      
-      console.log('=== ЗАГРУЗКА ЗАВЕРШЕНА ===');
-    } catch (error) {
-      console.warn('Ошибка загрузки покемонов:', error);
+    } catch (err) {
       this.isLoaded = false;
     }
   }
@@ -69,7 +51,6 @@ class PokemonService {
 
   async loadFullPokemon(pokemonId: number): Promise<Pokemon | null> {
     try {
-      console.log(`Загружаем полные данные покемона ${pokemonId}...`);
       const basicData = this.getBasicPokemons().find(pokemon => pokemon.id === pokemonId);
 
       if (!basicData) {
@@ -93,16 +74,13 @@ class PokemonService {
         earned: apiData.earned,
       };
 
-      console.log(`Полные данные покемона ${pokemonId} загружены`);
       return fullPokemon;
     } catch (err) {
-      console.error(`Ошибка загрузки покемона ${pokemonId}:`, err);
       return null;
     }
   }
 
   async fullDataPokemons(pokemonIds: number[]): Promise<Pokemon[]> {
-    console.log(`Загружаем ${pokemonIds.length} покемонов с деталями...`);
     const promises = pokemonIds.map(id => this.loadFullPokemon(id));
     const results = await Promise.all(promises);
     
@@ -110,7 +88,6 @@ class PokemonService {
   }
 
   async getUserPokemonsWithDetails(userLogin: string): Promise<Pokemon[]> {
-    console.log(`Загрузка покемонов пользователя ${userLogin}...`);
     const userData = lsHashMap.get(`userData_${userLogin}`);
 
     if (!userData || !userData.pokemons || !Array.isArray(userData.pokemons)) {
@@ -118,9 +95,7 @@ class PokemonService {
       return [];
     }
 
-    const userPokemons = userData.pokemons;
-    console.log(`Найдено ${userPokemons.length} покемонов в LS`);
-  
+    const userPokemons = userData.pokemons;  
     const result: Pokemon[] = [];
 
     for (const userPokemon of userPokemons) {
@@ -146,14 +121,12 @@ class PokemonService {
         };
 
         result.push(fullPokemon);
-        console.log(`Покемон ${userPokemon.id}: "${userPokemon.name}"`);
       } catch (err) {
         console.error(`Ошибка загрузки покемона ${userPokemon.id}:`, err);
         result.push(userPokemon as Pokemon);
       }
     }
 
-    console.log(`Итого загружено: ${result.length} покемонов`);
     return result;
   }
 

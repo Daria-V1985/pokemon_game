@@ -61,16 +61,10 @@ const saveName = () => {
     return;
   }
 
-  console.log('Сохраняем основное имя покемона...');
-  console.log('ID покемона:', props.currentPokemon.id);
-  console.log('Старое имя:', props.currentPokemon.name);
-  console.log('Новое имя:', trimmedName);
-
   emit('saveName', { 
     name: trimmedName, 
     pokemon: props.currentPokemon 
   });
-  console.log('Событие saveName отправлено');
 };
 
 </script>

@@ -11,7 +11,6 @@ onMounted(() => {
   const savedAuth = lsHashMap.get('authUser');
   if (savedAuth) {
     authStore.user = savedAuth;
-    console.log('Данные авторизации загружены через lsHashMap');
   }
 
   if (authStore.user?.login) {
@@ -20,7 +19,6 @@ onMounted(() => {
       userStore.money = savedUser.money || 0;
       userStore.pokemons = savedUser.pokemons || [];
       userStore.isInitial = true;
-      console.log('Данные пользователя загружены для:', authStore.user.login);
     }
   }
 });
@@ -31,8 +29,6 @@ onBeforeUnmount (() => {
       money: userStore.money,
       pokemons: userStore.pokemons,
     });
-    console.log('Данные пользователя сохранены для:', authStore.user.login);
-    
   }
 });
 
