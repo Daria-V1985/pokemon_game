@@ -52,8 +52,10 @@ class LSHashMap {
   }
 
   get(id: string) {
+    console.log(`lsHashMap.get: "${id}"`);
     if (this.cache.has(id)) {
-      return this.cache.get(id);
+      const cached = this.cache.get(id);
+      return cached;
     }
 
     const data = localStorage.getItem(id);
@@ -63,14 +65,14 @@ class LSHashMap {
         this.cache.set(id, dataValue);
         return dataValue;
       } catch (err) {
-        console.warn(`Не удалось обработать данные: ${id}`, err);
         return null;
       }
     }
+
     return null;
   }
- 
-  set (id: string, data: any) {
+
+  set (id: string, data: any) {    
     this.cache.set(id, data);
     this.pendingWrites.add(id);
 
@@ -91,6 +93,8 @@ class LSHashMap {
       } catch (err) {
         console.warn(`Не удалось обработать данные: ${id}`, err);
       }
+    } else {
+      console.warn(`Ключ "${id}" не найден в кэше`);
     }
   }
 

@@ -1,99 +1,133 @@
 import { lsHashMap } from "@/stores/lsHashMap";
+import { type Pokemon } from "@/types/pokemon";
 
-export interface Pokemon {
-  id: number;
-  name: string;
-  image: string;
-  weight: number;
-  money: number;
-  earned: number;
-  age: string;
-}
+type PokemonBasicData = Pick<Pokemon, 'id' | 'name' | 'weight' | 'age'>;
+type PokemonDetails = Omit<Pokemon, keyof PokemonBasicData>;
 
 class PokemonService {
   private readonly POKEMONS_KEY = 'pokemons';
   private isLoaded = false;
 
   async loadAllPokemons(): Promise<void> {
-    if (this.isLoaded) {
-      console.log('Покемоны уже загружены');
-      return;
-    } 
-    console.log('=== НАЧАЛО ЗАГРУЗКИ ПОКЕМОНОВ ===');
+    if (this.isLoaded) return;
 
     try {
-      console.log('1. Делаем запрос к API...');
       const response = await fetch('https://9d6066f5473655c8.mokky.dev/pokemons');
-      console.log('API ответил, статус:', response.status);
       const data = await response.json();
       
-      console.log('2. Данные получены:');
-      console.log('   Тип:', typeof data);
-      console.log('   Это массив?', Array.isArray(data));
-      console.log('   Количество покемонов:', Array.isArray(data) ? data.length : 'N/A');
-
-      if (Array.isArray(data) && data.length > 0) {
-        console.log('3. Первый элемент массива:', data[0]);
-        console.log('Ключи первого элемента:', Object.keys(data[0]));
-      }
-
-      console.log('4. Проверяем структуру данных...');
-
       if (!Array.isArray(data) || data.length === 0) {
         throw new Error('Нет данных для обработки');
       }
 
-      const pokemons: Pokemon[] = data.map((pokemon: any, index: number) => {
-          let imageUrl = pokemon.image;
-
-          if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-          imageUrl = '/' + imageUrl;
-        }
+      const pokemons: PokemonBasicData[] = data.map((pokemon: any) => {
         
-        if (imageUrl && !imageUrl.startsWith('http')) {
-          imageUrl = `http://192.168.0.102:8080${imageUrl}`;
-        }
-
           return {
             id: pokemon.id,
             name: pokemon.name,
-            image: `http://localhost:8080/${pokemon.image}`,
             weight: pokemon.weight,
-            money: pokemon.money,
-            earned: pokemon.earned, 
             age: pokemon.age 
           };
         });
 
-      console.log(`5. Обработано ${pokemons.length} покемонов`);
-      console.log('   Пример покемона:', pokemons[0]);
-
-      console.log('6. Сохраняем в LocalStorage...');
       const key = this.POKEMONS_KEY;
-      localStorage.setItem(key, JSON.stringify(pokemons));
-      console.log(`Сохранено напрямую в localStorage под ключом "${key}"`);
-      console.log(`Ключ "${key}" создан с ${pokemons.length} покемонами`);
-
-      lsHashMap.set(key, pokemons);
-      lsHashMap.flush(key);
-      
+      localStorage.setItem(key, JSON.stringify(pokemons));      
       this.isLoaded = true;
-      console.log(`Загружено ${pokemons.length} покемонов в LS`);
-
-      console.log('7. Проверяем сохранение...');
-      const savedData = lsHashMap.get(key);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        console.log(`   🎉 УСПЕХ! В LS сохранено ${parsed.length} покемонов`);
-      } else {
-        console.error('   ❌ ОШИБКА: Данные не сохранились!');
-      }
-      
-      console.log('=== ЗАГРУЗКА ЗАВЕРШЕНА ===');
-    } catch (error) {
-      console.warn('Ошибка загрузки покемонов:', error);
+    } catch (err) {
       this.isLoaded = false;
     }
+  }
+
+  getBasicPokemons(): PokemonBasicData[] {
+    const cached = localStorage.getItem(this.POKEMONS_KEY);
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  async loadFullPokemon(pokemonId: number): Promise<Pokemon | null> {
+    try {
+      const basicData = this.getBasicPokemons().find(pokemon => pokemon.id === pokemonId);
+
+      if (!basicData) {
+        console.warn(`Покемон ${pokemonId} не найден в базовых данных`);
+        return null;
+      }
+
+      const response = await fetch(`https://9d6066f5473655c8.mokky.dev/pokemons/${pokemonId}`);
+      
+      if (!response.ok) {
+        console.warn(`Покемон ${pokemonId} не найден в API`);
+        return null;
+      }
+      
+      const apiData = await response.json();
+      const fullPokemon: Pokemon = {
+        ...basicData,
+        image: `http://localhost:8080/${apiData.image}`,
+        view: apiData.view,
+        money: apiData.money,
+        earned: apiData.earned,
+      };
+
+      return fullPokemon;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async fullDataPokemons(pokemonIds: number[]): Promise<Pokemon[]> {
+    const promises = pokemonIds.map(id => this.loadFullPokemon(id));
+    const results = await Promise.all(promises);
+    
+    return results.filter((pokemon): pokemon is Pokemon => pokemon !== null);
+  }
+
+  async getUserPokemonsWithDetails(userLogin: string): Promise<Pokemon[]> {
+    const userData = lsHashMap.get(`userData_${userLogin}`);
+
+    if (!userData || !userData.pokemons || !Array.isArray(userData.pokemons)) {
+      console.log(`У пользователя ${userLogin} нет покемонов`);
+      return [];
+    }
+
+    const userPokemons = userData.pokemons;  
+    const result: Pokemon[] = [];
+
+    for (const userPokemon of userPokemons) {
+      try {
+        const response = await fetch(`https://9d6066f5473655c8.mokky.dev/pokemons/${userPokemon.id}`);
+      
+        if (!response.ok) {
+          console.warn(`API недоступно для покемона ${userPokemon.id}, используем данные из LS`);
+          result.push(userPokemon as Pokemon);
+          continue;
+        }
+        
+        const apiData = await response.json();
+        const fullPokemon: Pokemon = {
+          id: userPokemon.id,
+          name: userPokemon.name, 
+          weight: userPokemon.weight,
+          age: userPokemon.age,
+          image: `http://localhost:8080/${apiData.image}`,
+          view: apiData.view,
+          money: apiData.money,
+          earned: apiData.earned
+        };
+
+        result.push(fullPokemon);
+      } catch (err) {
+        console.error(`Ошибка загрузки покемона ${userPokemon.id}:`, err);
+        result.push(userPokemon as Pokemon);
+      }
+    }
+
+    return result;
   }
 
   getAllPokemons(): Pokemon[] {

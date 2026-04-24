@@ -21,52 +21,50 @@
 
 <script lang="ts" setup>
 import { ref, watch, computed } from 'vue';
-import { lsHashMap } from "@/stores/lsHashMap"
+import { Pokemon } from '@/types/pokemon';
 import Button from '../Button.vue';
-
-interface Pokemon {
-  id: number;
-  image: string;
-  name: string;
-  weight: number;
-  money: number;
-  earned: number;
-  age: string;
-}
 
 const props = defineProps<{
   currentPokemon?: Pokemon | null;
 }>();
 
-const storedName = (id?: number): string => {
-  if (!id) return '';
-  return lsHashMap.getPokemonAlias(id) || '';
+const emit = defineEmits<{
+  'saveName': [{ name: string; pokemon?: Pokemon }];
+}>();
+
+const getCurrentName = (): string => {
+  return props.currentPokemon?.name || '';
 };
 
-const inputName = ref(storedName(props.currentPokemon?.id) || props.currentPokemon?.name || '');
+const inputName = ref(getCurrentName());
 
 const isValidName = computed(() => {
   const trimmed = inputName.value.trim();
   if (!trimmed) return false;
-  const stored = storedName(props.currentPokemon?.id);
-  const base = props.currentPokemon?.name || '';
-  return trimmed !== stored && trimmed !== base;
+  const currentName = getCurrentName();
+  return trimmed !== currentName;
 });
 
 watch(
   () => props.currentPokemon,
   (newPokemon) => {
-    inputName.value = storedName(newPokemon?.id) || newPokemon?.name || '';
+    inputName.value = newPokemon?.name || '';
   },
   { immediate: true }
 );
 
 const saveName = () => {
   const trimmedName = inputName.value.trim();
-  if (!isValidName.value || !props.currentPokemon?.id) return;
+  
+  if (!isValidName.value || !props.currentPokemon?.id) {
+    console.warn('Невалидные данные для сохранения');
+    return;
+  }
 
-  lsHashMap.set(props.currentPokemon.id.toString(), trimmedName);
-  alert('Имя сохранено!');  
+  emit('saveName', { 
+    name: trimmedName, 
+    pokemon: props.currentPokemon 
+  });
 };
 
 </script>

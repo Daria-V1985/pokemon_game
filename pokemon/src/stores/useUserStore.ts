@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { lsHashMap } from './lsHashMap';
-import { pokemonService, type Pokemon } from '@/services/pokemonService';
+import { useAuthStore } from './AuthStore';
+import { Pokemon } from '@/types/pokemon';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
@@ -75,15 +76,56 @@ export const useUserStore = defineStore('user', () => {
     pokemons.value.push(pokemon);
   };
 
-  const removePokemon = (pokemonId: number) => {
-    const index = pokemons.value.findIndex(pok => pok.id === pokemonId);
-    if (index !== -1) {
-      pokemons.value.splice(index, 1);
-    }
-  };
-
   const clearPokemons = () => {
     pokemons.value = [];
+  };
+
+  const deletePokemon = (pokemonId: number) => {
+    try {
+      console.log('🗑️ Удаляем покемона с ID:', pokemonId, 'из данных пользователя');
+      
+      const authStore = useAuthStore();
+      const currentUser = authStore.user;
+      
+      if (!currentUser) {
+        console.error('Пользователь не авторизован');
+        return false;
+      }
+
+      const userLogin = currentUser.login;
+      const userDataKey = `userData_${userLogin}`;
+      const currentUserData = lsHashMap.get(userDataKey);
+      
+      if (!currentUserData) {
+        console.error('Данные пользователя не найдены');
+        return false;
+      }
+
+      const currentPokemons = currentUserData.pokemons || [];
+      const updatedPokemons = currentPokemons.filter((p: Pokemon) => p.id !== pokemonId);
+      
+      console.log('Было покемонов:', currentPokemons.length, 'Стало:', updatedPokemons.length);
+
+      const updatedUserData = {
+        ...currentUserData,
+        pokemons: updatedPokemons
+      };
+      
+      lsHashMap.set(userDataKey, updatedUserData);
+      pokemons.value = updatedPokemons;
+
+      const aliasKey = `pokemonAlias_${pokemonId}`;
+      if (localStorage.getItem(aliasKey)) {
+        localStorage.removeItem(aliasKey);
+        console.log('Псевдоним покемона удален');
+      }
+
+      console.log('Покемон успешно удален из данных пользователя!');
+      return true;
+    } catch (err) {
+      console.error('Ошибка при удалении покемона:', err);
+      return false;
+    }
   };
 
   return {
@@ -99,7 +141,7 @@ export const useUserStore = defineStore('user', () => {
     decrementMoney,
     setMoney,
     addPokemon,
-    removePokemon,
-    clearPokemons
+    clearPokemons,
+    deletePokemon
   };
 });
