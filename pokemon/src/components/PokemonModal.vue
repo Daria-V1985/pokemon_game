@@ -17,6 +17,7 @@
               :is="currentComponent" 
               :pokemon="pokemon"
               @updatePokemon="$emit('updatePokemon', $event)"
+              @pokemonDeleted="handlePokemonDeleted"
             />
           </Tabs>
           <div class="popup__footer">
@@ -47,7 +48,8 @@ interface Popup {
 const props = defineProps<Popup>();
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
-  'updatePokemon': [pokemon: Pokemon];  
+  'updatePokemon': [pokemon: Pokemon];
+  'pokemonDeleted': [pokemonId: number];  
 }>();
 
 const modalTabs = [
@@ -95,6 +97,11 @@ watch(() => props.modelValue,
 
 const closeModal = () => {
   emit('update:modelValue', false);
+};
+
+const handlePokemonDeleted = (pokemonId: number) => {
+  closeModal();
+  emit('pokemonDeleted', pokemonId);
 };
 
 </script>

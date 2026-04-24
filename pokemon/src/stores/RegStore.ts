@@ -34,7 +34,7 @@ export const useRegStore = defineStore('register', () => {
     const userStore = useUserStore();
     
     const initData = {
-      money: 100,
+      money: 11200,
       pokemons: [] as Pokemon[],
     };
 
