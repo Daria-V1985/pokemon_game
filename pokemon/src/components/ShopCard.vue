@@ -19,15 +19,8 @@
 </template>
 
 <script lang="ts" setup>
+import { Shop } from '@/types/shop';
 import Button from './Button.vue';
-
-interface Shop {
-  id: number,
-  image: string,
-  title: string,
-  text: string,
-  buy: number,
-}
 
 const props = defineProps<Shop>();
 </script>

@@ -1,31 +1,29 @@
 <template>
   <div class="shop__list shop-list">
     <ShopCard 
-      v-for="shopCard in shopCards"
+      v-for="shopCard in filteredShopCards"
       :key="shopCard.id"
       :id="shopCard.id"
       :image="shopCard.image"
       :title="shopCard.title"
       :text="shopCard.text"
       :buy="shopCard.buy"
+      :type="shopCard.type"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
+import { ref, onMounted, computed } from "vue";
+import { Shop } from "@/types/shop";
+import { TagItem } from "@/types/tagItem";
 import ShopCard from "./ShopCard.vue";
-import { ref, onMounted } from "vue";
-
-interface Shop {
-  id: number,
-  image: string,
-  title: string,
-  text: string,
-  buy: number,
-}
 
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/shopCards';
 const shopCards = ref<Shop[]>([]);
+const props = defineProps<{
+  activeTags: TagItem[];
+}>();
 
 const loadShopCards = async (): Promise<void> => {
   try {
@@ -36,6 +34,13 @@ const loadShopCards = async (): Promise<void> => {
     console.error('Ошибка загрузки данных из API:', err);
   }
 }
+
+const filteredShopCards = computed(() => {
+  if (props.activeTags.length === 0) return shopCards.value;
+  return shopCards.value.filter(item =>
+    props.activeTags.some(tag => tag.type === item.type)
+  );
+});
 
 onMounted(() => {
   loadShopCards();

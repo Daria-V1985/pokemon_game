@@ -1,7 +1,26 @@
 <template>
-  <div class="filters__tag">Ягоды</div>
-  <div class="filters__tag">Покеболлы</div>
+  <div
+    v-for="tag in tags"
+    :key="tag.id" 
+    class="filters__tag"
+    @click="emit('remove', tag.id)"
+  >
+    {{ tag.name }}
+  </div>
 </template>
+
+<script lang="ts" setup>
+import { TagItem } from '@/types/tagItem';
+
+defineProps<{
+  tags: TagItem[]
+}>();
+
+const emit = defineEmits<{
+  remove: [id: number]
+}>();
+
+</script>
 
 <style lang="scss" setup>
 @import "../assets/scss/_variables.scss";
@@ -22,6 +41,9 @@
       margin-left: 0.4rem;
       cursor: pointer;
       font-weight: 700;
+    }
+    &:hover {
+      background: rgba($neutral, 0.35);
     }
   }
 }
