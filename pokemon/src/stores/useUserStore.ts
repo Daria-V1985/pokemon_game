@@ -9,6 +9,36 @@ export const useUserStore = defineStore('user', () => {
   const pokemons = ref<Pokemon[]>([]);
   const isInitial = ref(false);
 
+  let incomeInterval: ReturnType<typeof setInterval> | null = null;
+  const passiveIncomeStep = ref(0);
+
+  const startPassiveIncome = (userLogin: string) => {
+    stopPassiveIncome();
+    const calculateIncomeStep = () => {
+    if (pokemons.value.length > 0) {
+      return pokemons.value.reduce((total, pokemon) => {
+        const pokemonMoney = (pokemon as any).price || 11200;
+        return total + Math.round(pokemonMoney * 0.1);
+      }, 0);
+    }
+    return Math.round(11200 * 0.1); 
+  };
+    passiveIncomeStep.value = calculateIncomeStep();
+
+    incomeInterval = setInterval(() => {
+      if (!isInitial.value) return;
+      money.value += passiveIncomeStep.value;
+      saveUserData(userLogin);
+    }, 1000); 
+  };
+
+  const stopPassiveIncome = () => {
+    if (incomeInterval) {
+      clearInterval(incomeInterval);
+      incomeInterval = null;
+    }
+  };
+
   const loadUserData = (userLogin: string) => {
     const data = lsHashMap.get(`userData_${userLogin}`);
     if (data) {
@@ -16,6 +46,7 @@ export const useUserStore = defineStore('user', () => {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
         isInitial.value = true;
+        startPassiveIncome(userLogin);
       } catch (err) {
         console.error('Не удалось обработать данные:', err);
       }
@@ -41,6 +72,10 @@ export const useUserStore = defineStore('user', () => {
     }
     pokemons.value = [];
     isInitial.value = true;
+    const authStore = useAuthStore();
+    if (authStore.user?.login) {
+      startPassiveIncome(authStore.user.login);
+    }
   };
 
   const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {    
@@ -48,6 +83,7 @@ export const useUserStore = defineStore('user', () => {
     pokemons.value = [...data.pokemons];
     isInitial.value = true;
     saveUserData(userLogin);
+    startPassiveIncome(userLogin);
 
     const checkData = lsHashMap.get(`userData_${userLogin}`);
   };
@@ -74,6 +110,10 @@ export const useUserStore = defineStore('user', () => {
 
   const addPokemon = (pokemon: Pokemon) => {
     pokemons.value.push(pokemon);
+    const authStore = useAuthStore();
+    if (authStore.user?.login) {
+      startPassiveIncome(authStore.user.login);
+    }
   };
 
   const clearPokemons = () => {
@@ -82,8 +122,6 @@ export const useUserStore = defineStore('user', () => {
 
   const deletePokemon = (pokemonId: number) => {
     try {
-      console.log('🗑️ Удаляем покемона с ID:', pokemonId, 'из данных пользователя');
-      
       const authStore = useAuthStore();
       const currentUser = authStore.user;
       
@@ -103,8 +141,6 @@ export const useUserStore = defineStore('user', () => {
 
       const currentPokemons = currentUserData.pokemons || [];
       const updatedPokemons = currentPokemons.filter((p: Pokemon) => p.id !== pokemonId);
-      
-      console.log('Было покемонов:', currentPokemons.length, 'Стало:', updatedPokemons.length);
 
       const updatedUserData = {
         ...currentUserData,
@@ -117,10 +153,10 @@ export const useUserStore = defineStore('user', () => {
       const aliasKey = `pokemonAlias_${pokemonId}`;
       if (localStorage.getItem(aliasKey)) {
         localStorage.removeItem(aliasKey);
-        console.log('Псевдоним покемона удален');
       }
-
-      console.log('Покемон успешно удален из данных пользователя!');
+      if (authStore.user?.login) {
+        startPassiveIncome(authStore.user.login);
+      }
       return true;
     } catch (err) {
       console.error('Ошибка при удалении покемона:', err);
@@ -132,6 +168,7 @@ export const useUserStore = defineStore('user', () => {
     money,
     pokemons,
     isInitial,
+    passiveIncomeStep,
     initNewUser,
     loadUserData,
     saveUserData,
@@ -142,6 +179,7 @@ export const useUserStore = defineStore('user', () => {
     setMoney,
     addPokemon,
     clearPokemons,
-    deletePokemon
+    deletePokemon,
+    stopPassiveIncome
   };
 });

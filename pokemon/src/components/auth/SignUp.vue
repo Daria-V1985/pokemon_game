@@ -43,7 +43,6 @@ import Input from "@/components/Input.vue";
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
 import { useRegStore } from '@/stores/RegStore';
-//import { useUserStore } from "@/stores/useUserStore";
 import { useAuthStore } from '@/stores/AuthStore'
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
@@ -82,10 +81,6 @@ const onSubmit = handleSubmit(async (values) => {
       authStore.isAuth = true;
       authStore.saveAuthData();
 
-      //const userStore = useUserStore();
-      //userStore.loadUserData(values.regLogin);
-
-      console.log(`Регистрация успешна! Пользователь: ${registeredUser.login}`);
       alert('Регистрация успешна! Вы автоматически вошли в систему.');
       router.push('/main');
     }

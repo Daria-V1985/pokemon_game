@@ -34,7 +34,6 @@ import Input from "@/components/Input.vue";
 import { ref } from "vue";
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/AuthStore'
-import { useUserStore } from "@/stores/useUserStore";
 import { useForm } from "vee-validate";
 import * as yup from "yup";  
 
@@ -57,21 +56,12 @@ const { handleSubmit, values, errors, setFieldValue } = useForm({
 
 const onSubmit = handleSubmit(async (values) => {
   try {
-    console.log('Попытка входа:', values.authLogin);
     await authStore.loginUser({ 
       login: values.authLogin, 
       password: values.password 
     });
 
-    console.log('Авторизация прошла успешно!');
-
-    if (authStore.isAuth && authStore.user) {
-      console.log('✅ Авторизация успешна:', authStore.user);
-      
-      const userStore = useUserStore();
-      console.log('Деньги пользователя:', userStore.money);
-      console.log('Покемоны пользователя:', userStore.pokemons.length);
-      
+    if (authStore.isAuth && authStore.user) {            
       alert(`Авторизация успешна! Добро пожаловать, ${authStore.user.login}!`);
       router.push('/main');
     } else {
