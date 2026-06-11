@@ -1,5 +1,12 @@
 <template>
-  <div :class="['grid-cell', cellModClass]">
+  <div :class="[
+    'grid-cell', {'grid-cell__active': isDragOver || props.itemType }
+    ]"
+    @dragover.prevent
+    @dragenter.prevent="handleDragEnter"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+  >
     <img 
       v-if="props.itemSrc" 
       :src="props.itemSrc" 
@@ -9,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { ref } from 'vue';
 
 interface Cells {
   itemSrc?: string; 
@@ -23,14 +30,23 @@ const props = withDefaults(defineProps<Cells>(), {
   itemType: null
 });
 
-const cellModClass = computed(() => {
-  if (!props.itemType) return 'grid-cell--empty';
-  return `grid-cell--${props.itemType}`;
-});
+const isDragOver = ref(false);
+
+const handleDragEnter = () => {
+  isDragOver.value = true;
+};
+
+const handleDragLeave = () => {
+  isDragOver.value = false;
+};
+
+const handleDrop = () => {
+  isDragOver.value = false;
+};
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .grid-cell {
   background-color: #efefef;
   opacity: 0.3;
@@ -42,9 +58,18 @@ const cellModClass = computed(() => {
   transition: all 0.2s ease;
   border: 1px solid transparent;
   cursor: pointer;
+  &__active {
+    opacity: 1;
+    cursor: pointer;
+    &:hover {
+      filter: brightness(0.9);
+    }
+  }
   &__item {
     max-width: 80%;
     max-height: 80%;
+    object-fit: contain;
+    image-rendering: pixelated;
   }
 }
 </style>

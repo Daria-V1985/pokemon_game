@@ -11,7 +11,8 @@
     </div>
     <Button
       color="primary"
-      type="submit"
+      type="button"
+      @click="buyItem"
     > 
       Купить за {{ props.buy }}
     </Button>
@@ -20,9 +21,25 @@
 
 <script lang="ts" setup>
 import { Shop } from '@/types/shop';
+import { InventoryItem } from '@/types/inventoryItem';
+import { useInventoryStore } from '@/stores/InventoryStore';
 import Button from './Button.vue';
 
 const props = defineProps<Shop>();
+const inventoryStore = useInventoryStore();
+
+const buyItem = () => {
+  const itemToBuy: Omit<InventoryItem, 'slot'> = {
+    id: props.id,
+    name: props.title,
+    type: props.type as 'berry' | 'pokeball',
+    image: props.image,
+    price: props.buy
+  };
+
+  inventoryStore.buyItem(itemToBuy);
+};
+
 </script>
 
 <style lang="scss" scoped>

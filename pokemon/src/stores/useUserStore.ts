@@ -3,10 +3,12 @@ import { ref } from 'vue';
 import { lsHashMap } from './lsHashMap';
 import { useAuthStore } from './AuthStore';
 import { Pokemon } from '@/types/pokemon';
+import { InventoryItem } from '@/types/inventoryItem';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
   const pokemons = ref<Pokemon[]>([]);
+  const inventory = ref<InventoryItem[]>([]);
   const isInitial = ref(false);
 
   let incomeInterval: ReturnType<typeof setInterval> | null = null;
@@ -28,7 +30,7 @@ export const useUserStore = defineStore('user', () => {
     incomeInterval = setInterval(() => {
       if (!isInitial.value) return;
       money.value += passiveIncomeStep.value;
-      saveUserData(userLogin);
+      //saveUserData(userLogin);
     }, 1000); 
   };
 
@@ -45,6 +47,7 @@ export const useUserStore = defineStore('user', () => {
       try {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
+        inventory.value = data.inventory || [];
         isInitial.value = true;
         startPassiveIncome(userLogin);
       } catch (err) {
@@ -61,6 +64,7 @@ export const useUserStore = defineStore('user', () => {
     const userData = {
       money: money.value,
       pokemons: pokemons.value,
+      inventory: inventory.value,
     };
     lsHashMap.set(`userData_${userLogin}`, userData);  
     const savedData = lsHashMap.get(`userData_${userLogin}`);
@@ -71,6 +75,7 @@ export const useUserStore = defineStore('user', () => {
       money.value = 0;
     }
     pokemons.value = [];
+    inventory.value = [];
     isInitial.value = true;
     const authStore = useAuthStore();
     if (authStore.user?.login) {
@@ -78,9 +83,10 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-  const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {    
+  const setInitialData = (data: { money: number; pokemons: Pokemon[], inventory: InventoryItem[] }, userLogin: string) => {    
     money.value = data.money;
     pokemons.value = [...data.pokemons];
+    inventory.value = [...data.inventory];
     isInitial.value = true;
     saveUserData(userLogin);
     startPassiveIncome(userLogin);
@@ -167,6 +173,7 @@ export const useUserStore = defineStore('user', () => {
   return {
     money,
     pokemons,
+    inventory,
     isInitial,
     passiveIncomeStep,
     initNewUser,
@@ -180,6 +187,6 @@ export const useUserStore = defineStore('user', () => {
     addPokemon,
     clearPokemons,
     deletePokemon,
-    stopPassiveIncome
+    stopPassiveIncome,
   };
 });

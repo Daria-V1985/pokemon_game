@@ -8,9 +8,9 @@
             v-for="(_, index) in 50"
             :key="index"
             :index="index"
-            :itemSrc="''"
-            :itemAlt="''"
-            :itemType="null"
+            :itemSrc="itemInSlot(index)?.image || ''"
+            :itemAlt="itemInSlot(index)?.name || ''"
+            :itemType="itemInSlot(index)?.type || null"
           />
           <div class="inventory__coins-bar coins-bar">
             <div class="coins-bar__balance">
@@ -27,11 +27,14 @@
 </template>
 
 <script lang="ts" setup>
-//import { ref } from 'vue';
 import { useUserStore } from '@/stores/useUserStore';
 import Cell from './Cell.vue';
 
 const userStore = useUserStore();
+
+const itemInSlot = (slot: number) => {
+  return userStore.inventory.find(item => item.slot === slot);
+};
 
 </script>
 

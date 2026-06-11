@@ -18,6 +18,7 @@ onMounted(() => {
     if (savedUser) {
       userStore.money = savedUser.money || 0;
       userStore.pokemons = savedUser.pokemons || [];
+      userStore.inventory = savedUser.inventory || [];
       userStore.isInitial = true;
     }
   }
@@ -28,6 +29,7 @@ onBeforeUnmount (() => {
     lsHashMap.set(`userData_${authStore.user.login}`, {
       money: userStore.money,
       pokemons: userStore.pokemons,
+      inventory: userStore.inventory,
     });
   }
 });
@@ -40,7 +42,8 @@ window.addEventListener('beforeunload', () => {
   if (authStore.user?.login && userStore.isInitial) {
     lsHashMap.set(`userData_${authStore.user.login}`, {
       money: userStore.money,
-      pokemons: userStore.pokemons
+      pokemons: userStore.pokemons,
+      inventory: userStore.inventory,
     });
   }
 });
