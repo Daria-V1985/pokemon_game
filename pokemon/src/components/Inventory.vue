@@ -11,6 +11,7 @@
             :itemSrc="itemInSlot(index)?.image || ''"
             :itemAlt="itemInSlot(index)?.name || ''"
             :itemType="itemInSlot(index)?.type || null"
+            @moveItem="onItemMoved"
           />
           <div class="inventory__coins-bar coins-bar">
             <div class="coins-bar__balance">
@@ -28,14 +29,19 @@
 
 <script lang="ts" setup>
 import { useUserStore } from '@/stores/useUserStore';
+import { useInventoryStore } from '@/stores/InventoryStore';
 import Cell from './Cell.vue';
 
 const userStore = useUserStore();
+const inventStore = useInventoryStore();
 
 const itemInSlot = (slot: number) => {
   return userStore.inventory.find(item => item.slot === slot);
 };
 
+const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number}) => {
+  inventStore.moveItem(fromIndex, toIndex);
+};
 </script>
 
 <style lang="scss" scoped>

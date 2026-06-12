@@ -40,8 +40,25 @@ export const useInventoryStore = defineStore('inventory', () => {
     return true;
   };
 
+  const moveItem = (fromIndex: number, toIndex: number) => {
+    const itemToMove = userStore.inventory.find(item => item.slot === fromIndex);
+    if (!itemToMove) return;
+
+    const targetItem = userStore.inventory.find(item => item.slot === toIndex);
+    if (targetItem) {
+      targetItem.slot = fromIndex;
+    }
+    itemToMove.slot = toIndex;
+
+    const login = authStore.user?.login;
+    if (login) {
+      userStore.saveUserData(login);
+    }
+  };
+
   return {
     inventStore,
-    buyItem
+    buyItem,
+    moveItem
   };
 });

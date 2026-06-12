@@ -11,6 +11,7 @@ onMounted(() => {
   const savedAuth = lsHashMap.get('authUser');
   if (savedAuth) {
     authStore.user = savedAuth;
+    authStore.isAuth = true;
   }
 
   if (authStore.user?.login) {
@@ -25,6 +26,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount (() => {
+  userStore.stopPassiveIncome();
   if (authStore.user?.login && userStore.isInitial) {
     lsHashMap.set(`userData_${authStore.user.login}`, {
       money: userStore.money,

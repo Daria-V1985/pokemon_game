@@ -11,7 +11,10 @@
       v-if="props.itemSrc" 
       :src="props.itemSrc" 
       :alt="props.itemAlt || 'item'" 
-      class="grid-cell__item" />
+      class="grid-cell__item"
+      draggable="true"
+      @dragstart="handleDragStart"
+    />
   </div>
 </template>
 
@@ -19,6 +22,7 @@
 import { ref } from 'vue';
 
 interface Cells {
+  index: number;
   itemSrc?: string; 
   itemAlt?: string; 
   itemType?: 'berry' | 'pokeball' | null;
@@ -30,6 +34,10 @@ const props = withDefaults(defineProps<Cells>(), {
   itemType: null
 });
 
+const emit = defineEmits<{
+  'moveItem': [data: { fromIndex: number; toIndex: number }];
+}>();
+
 const isDragOver = ref(false);
 
 const handleDragEnter = () => {
@@ -40,8 +48,25 @@ const handleDragLeave = () => {
   isDragOver.value = false;
 };
 
-const handleDrop = () => {
+const handleDragStart = (e: DragEvent) => {
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', props.index.toString());
+  }
+};
+
+const handleDrop = (e: DragEvent) => {
   isDragOver.value = false;
+  if (!e.dataTransfer) return;
+
+  const fromIndexRaw = e.dataTransfer.getData('text/plain');
+  if (fromIndexRaw !== '') {
+    const fromIndex = parseInt(fromIndexRaw, 10);
+    const toIndex = props.index;
+    if (fromIndex !== toIndex) {
+      emit('moveItem', { fromIndex, toIndex });
+    }
+  }
 };
 
 </script>
@@ -70,6 +95,10 @@ const handleDrop = () => {
     max-height: 80%;
     object-fit: contain;
     image-rendering: pixelated;
+    cursor: grab;
+    &:active {
+      cursor: grabbing;
+    }
   }
 }
 </style>
