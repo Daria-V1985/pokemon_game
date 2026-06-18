@@ -20,7 +20,7 @@ import { TagItem } from "@/types/tagItem";
 import ShopCard from "./ShopCard.vue";
 import { mockShopItems } from "@/stores/mockShopItem";
 
-//const API_URL = 'https://9d6066f5473655c8.mokky.dev/shopCards';
+const API_URL = 'https://9d6066f5473655c8.mokky.dev/shopCards';
 const shopCards = ref<Shop[]>([]);
 const props = defineProps<{
   activeTags: TagItem[];
@@ -34,7 +34,7 @@ onMounted(async () => {
   }
 })
 
-/*const loadShopCards = async (): Promise<void> => {
+const loadShopCards = async (): Promise<void> => {
   try {
     const response = await fetch(API_URL);
     const data: Shop[] = await response.json();
@@ -42,7 +42,7 @@ onMounted(async () => {
   } catch (err) {
     console.error('Ошибка загрузки данных из API:', err);
   }
-}*/
+}
 
 const filteredShopCards = computed(() => {
   if (props.activeTags.length === 0) return shopCards.value;
@@ -51,9 +51,9 @@ const filteredShopCards = computed(() => {
   );
 });
 
-/*onMounted(() => {
+onMounted(() => {
   loadShopCards();
-})*/
+})
 </script>
 
 <style lang="scss" scoped>

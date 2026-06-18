@@ -30,7 +30,6 @@ export const useUserStore = defineStore('user', () => {
     incomeInterval = setInterval(() => {
       if (!isInitial.value) return;
       money.value += passiveIncomeStep.value;
-      //saveUserData(userLogin);
     }, 1000); 
   };
 
@@ -67,7 +66,7 @@ export const useUserStore = defineStore('user', () => {
       inventory: inventory.value,
     };
     lsHashMap.set(`userData_${userLogin}`, userData);  
-    const savedData = lsHashMap.get(`userData_${userLogin}`);
+    lsHashMap.flushAllData();
   };
 
   const initNewUser = (resMoney: boolean = true) => {
