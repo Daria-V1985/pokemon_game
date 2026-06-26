@@ -1,21 +1,26 @@
 <template>
   <div class="feed__list feed-list">
-    <div class="feed-list__cards">
+    <div v-if="buyBerries.length > 0" class="feed-list__cards">
       <FeedCard 
-        v-for="feedCard in feedCards"
-        :key="feedCard.id"
-        :id="feedCard.id"
-        :image="feedCard.image"
-        :title="feedCard.title"
-        :text="feedCard.text"
-        :action="feedCard.action"
+        v-for="berry in buyBerries"
+        :key="berry.slot"
+        :id="berry.id"
+        :image="berry.image"
+        :title="berry.name"
+        :text="berryDescription(berry.id)"
+        :action="berryAction(berry.id)"
+        @click="handleFeed(berry.slot)"
       />
+    </div>
+    <div v-else class="feed-list__empty">
+      <p>В вашем инвентаре нет ягод. Купите их на витрине магазина!</p>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useInventoryStore } from '@/stores/InventoryStore';
 import FeedCard from './FeedCard.vue';
 
 interface Feed {
@@ -28,6 +33,7 @@ interface Feed {
 
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/feed';
 const feedCards = ref<Feed[]>([]);
+const inventoryStore = useInventoryStore();
 
 const loadFeedCards = async (): Promise<void> => {
   try {
@@ -43,6 +49,24 @@ onMounted(() => {
   loadFeedCards();
 })
 
+const buyBerries = computed(() => {
+  return inventoryStore.inventStore.filter(berry => berry.type === 'berry');
+});
+
+const berryDescription = (berryId: number, fallbackText?: string): string => {
+  const matchedApi = feedCards.value.find(apiCard => apiCard.id === berryId);
+  return matchedApi ? matchedApi.text : (fallbackText || 'Вкусная ягода для вашего покемона');
+};
+
+const berryAction = (berryId: number): string => {
+  const matchedApi = feedCards.value.find(apiCard => apiCard.id === berryId);
+  return matchedApi ? matchedApi.action : 'Накормить';
+};
+
+const handleFeed = (slotIndex: number) => {
+  console.log(`Инициировано кормление ягодой из точного слота инвентаря: ${slotIndex}`);
+  // Сюда мы добавим логику удаления этой конкретной ягоды
+};
 </script>
 
 <style lang="scss" scoped>
