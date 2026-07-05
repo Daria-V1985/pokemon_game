@@ -60,7 +60,7 @@ const filteredSuggestions = computed(() => {
   const query = shopFilter.value.trim().toLowerCase()
   if (!query) return []
 
-  if (query.includes('ягод') || query.includes('berry')) {
+  if (query.includes('ягода') || query.includes('berry')) {
     return allSuggestions.filter(item => item.type === 'berry')
   }
   if (query.includes('покебол') || query.includes('pokeball')) {

@@ -81,6 +81,8 @@ export const useAuthStore = defineStore('auth', () => {
     if (user.value) {
       const userStore = useUserStore();
       userStore.saveUserData(user.value.login);
+      userStore.stopPassiveIncome();
+      
       setTimeout(() => {
         userStore.initNewUser();
         user.value = null;

@@ -18,12 +18,21 @@ import { ref, onMounted, computed } from "vue";
 import { Shop } from "@/types/shop";
 import { TagItem } from "@/types/tagItem";
 import ShopCard from "./ShopCard.vue";
+import { mockShopItems } from "@/stores/mockShopItem";
 
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/shopCards';
 const shopCards = ref<Shop[]>([]);
 const props = defineProps<{
   activeTags: TagItem[];
 }>();
+
+onMounted(async () => {
+  try {
+    shopCards.value = mockShopItems;
+  } catch (err) {
+    console.error('Ошибка загрузки:', err);
+  }
+})
 
 const loadShopCards = async (): Promise<void> => {
   try {

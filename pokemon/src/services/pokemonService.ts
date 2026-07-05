@@ -4,6 +4,15 @@ import { type Pokemon } from "@/types/pokemon";
 type PokemonBasicData = Pick<Pokemon, 'id' | 'name' | 'weight' | 'age'>;
 type PokemonDetails = Omit<Pokemon, keyof PokemonBasicData>;
 
+const mockPokemons: Pokemon[] = [
+  { "id":1,"image":"./image/my-pokemon.png","name":"klody","view":"clefairy","weight":12,"money":1.1,"earned":11200,"age":"1 день" },
+  { "id":2,"image":"./image/my-pokemon.png","name":"illy","view":"clefairy","weight":12,"money":1.1,"earned":11200,"age":"1 день" },
+  { "id":3,"image":"./image/my-pokemon.png","name":"tote","view":"clefairy","weight":12,"money":1.1,"earned":11200,"age":"1 день" },
+  { "id":4,"image":"./image/my-pokemon.png","name":"tote","view":"clefairy","weight":12,"money":1.1,"earned":11200,"age":"1 день" },
+  { "id":5,"image":"./image/my-pokemon.png","name":"tote","view":"clefairy","weight":12,"money":1.1,"earned":11200,"age":"1 день" },
+  { "id":6,"image":"./image/my-pokemon.png","name":"tote","view":"clefairy","weight":12,"money":1.1,"earned":11200,"age":"1 день" },
+];
+
 class PokemonService {
   private readonly POKEMONS_KEY = 'pokemons';
   private isLoaded = false;
@@ -33,7 +42,12 @@ class PokemonService {
       localStorage.setItem(key, JSON.stringify(pokemons));      
       this.isLoaded = true;
     } catch (err) {
-      this.isLoaded = false;
+      console.warn('Mokky API недоступен, инициализируем базовых покемонов из резерва');
+      const basicBackup: PokemonBasicData[] = mockPokemons.map(p => ({
+        id: p.id, name: p.name, weight: p.weight, age: p.age
+      }));
+      localStorage.setItem(this.POKEMONS_KEY, JSON.stringify(basicBackup));
+      this.isLoaded = true;
     }
   }
 
@@ -43,10 +57,11 @@ class PokemonService {
       try {
         return JSON.parse(cached);
       } catch {
-        return [];
+        return mockPokemons;
       }
     }
-    return [];
+    return mockPokemons.map(p => ({ id: p.id, image: p.image, name: p.name, view: p.view, weight: p.weight, money: p.money, 
+      earned: p.earned, age: p.age}));
   }
 
   async loadFullPokemon(pokemonId: number): Promise<Pokemon | null> {
@@ -55,20 +70,22 @@ class PokemonService {
 
       if (!basicData) {
         console.warn(`Покемон ${pokemonId} не найден в базовых данных`);
-        return null;
+        return mockPokemons.find(p => p.id === pokemonId) || null;
       }
 
       const response = await fetch(`https://9d6066f5473655c8.mokky.dev/pokemons/${pokemonId}`);
       
       if (!response.ok) {
-        console.warn(`Покемон ${pokemonId} не найден в API`);
-        return null;
+        const backup = mockPokemons.find(p => p.id === pokemonId);
+        return backup ? { ...basicData, ...backup } : null;
       }
       
       const apiData = await response.json();
+      const currentHost = typeof window !== 'undefined' ? window.location.host : 'localhost:8080';
+      
       const fullPokemon: Pokemon = {
         ...basicData,
-        image: `http://localhost:8080/${apiData.image}`,
+        image: `http://${currentHost}/${apiData.image}`,
         view: apiData.view,
         money: apiData.money,
         earned: apiData.earned,
@@ -76,7 +93,7 @@ class PokemonService {
 
       return fullPokemon;
     } catch (err) {
-      return null;
+      return mockPokemons.find(p => p.id === pokemonId) || null;
     }
   }
 
@@ -90,9 +107,9 @@ class PokemonService {
   async getUserPokemonsWithDetails(userLogin: string): Promise<Pokemon[]> {
     const userData = lsHashMap.get(`userData_${userLogin}`);
 
-    if (!userData || !userData.pokemons || !Array.isArray(userData.pokemons)) {
-      console.log(`У пользователя ${userLogin} нет покемонов`);
-      return [];
+    if (!userData || !userData.pokemons || !Array.isArray(userData.pokemons) || userData.pokemons.length === 0) {
+      console.log(`У пользователя ${userLogin} нет покемонов. Выдаем стартовый набор`);
+      return [ ...mockPokemons ];
     }
 
     const userPokemons = userData.pokemons;  
@@ -104,17 +121,23 @@ class PokemonService {
       
         if (!response.ok) {
           console.warn(`API недоступно для покемона ${userPokemon.id}, используем данные из LS`);
-          result.push(userPokemon as Pokemon);
+          const backupItem = mockPokemons.find(p => p.id === userPokemon.id)
+          result.push({ 
+            ...userPokemon,
+           image: userPokemon.image || backupItem?.image || ''
+          } as Pokemon);
           continue;
         }
         
         const apiData = await response.json();
+        const currentHost = typeof window !== 'undefined' ? window.location.host : 'localhost:8080';
+        
         const fullPokemon: Pokemon = {
           id: userPokemon.id,
           name: userPokemon.name, 
           weight: userPokemon.weight,
           age: userPokemon.age,
-          image: `http://localhost:8080/${apiData.image}`,
+          image: `http://${currentHost}/${apiData.image}`,
           view: apiData.view,
           money: apiData.money,
           earned: apiData.earned
@@ -122,8 +145,11 @@ class PokemonService {
 
         result.push(fullPokemon);
       } catch (err) {
-        console.error(`Ошибка загрузки покемона ${userPokemon.id}:`, err);
-        result.push(userPokemon as Pokemon);
+        const backupItem = mockPokemons.find(p => p.id === userPokemon.id);
+        result.push({
+          ...userPokemon,
+          image: userPokemon.image || backupItem?.image || ''
+        } as Pokemon);
       }
     }
 
@@ -132,12 +158,15 @@ class PokemonService {
 
   getAllPokemons(): Pokemon[] {
     const cached = lsHashMap.get(this.POKEMONS_KEY);
-    return cached && Array.isArray(cached) ? cached : [];
+    return cached && Array.isArray(cached) ? cached : mockPokemons;
   }
 
   getUserPokemons (userLogin: string): Pokemon[] {
     const userData = lsHashMap.get(`userData_${userLogin}`);
-    return userData?.pokemons || [];
+    if (userData?.pokemons || userData.pokemons.length === 0) {
+      return [ ...mockPokemons ];
+    }
+    return userData.pokemons;
   }
 
   isPokemonsLoaded(): boolean {

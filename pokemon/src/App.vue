@@ -11,37 +11,30 @@ onMounted(() => {
   const savedAuth = lsHashMap.get('authUser');
   if (savedAuth) {
     authStore.user = savedAuth;
+    authStore.isAuth = true;
   }
 
   if (authStore.user?.login) {
-    const savedUser = lsHashMap.get(`userData_${authStore.user.login}`);
-    if (savedUser) {
-      userStore.money = savedUser.money || 0;
-      userStore.pokemons = savedUser.pokemons || [];
-      userStore.isInitial = true;
-    }
+    userStore.loadUserData(authStore.user.login);
   }
 });
 
 onBeforeUnmount (() => {
+  userStore.stopPassiveIncome();
   if (authStore.user?.login && userStore.isInitial) {
-    lsHashMap.set(`userData_${authStore.user.login}`, {
-      money: userStore.money,
-      pokemons: userStore.pokemons,
-    });
+    userStore.loadUserData(authStore.user.login);
   }
 });
 
 window.addEventListener('beforeunload', () => {
+  userStore.stopPassiveIncome();
+
   if (authStore.user) {
     lsHashMap.set('authUser', authStore.user);
   }
   
   if (authStore.user?.login && userStore.isInitial) {
-    lsHashMap.set(`userData_${authStore.user.login}`, {
-      money: userStore.money,
-      pokemons: userStore.pokemons
-    });
+    userStore.saveUserData(authStore.user.login);
   }
 });
 

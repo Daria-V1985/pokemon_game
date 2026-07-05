@@ -1,18 +1,184 @@
 <template>
   <div class="garden">
     <div class="garden__container">
-      <div class="garden__body"></div>
+      <div class="garden__body">
+        <div class="garden__inventory garden-inventory">
+          <div class="garden-inventory__grid">
+            <Cell 
+              v-for="(_, index) in 49"
+              :key="index"
+              :index="index"
+              :itemSrc="''"
+              :itemAlt="''"
+              :itemType="null"
+              @moveItem="onItemMoved"
+            />
+          </div>
+        </div>
+        <div class="garden__sidebar garden-sidebar">
+          <div class="garden-sidebar__wrapper">
+            <div class="garden-sidebar__list">
+              <div class="garden-sidebar__item sidebar-item">
+                <div class="sidebar-item__info">
+                  <p class="sidebar-item__text">Увеличить площадь грядки</p>
+                </div>
+                <div class="sidebar-item__action">
+                  <Button 
+                    class="sidebar-item__action-btn"
+                    color="primary"
+                    type="button"
+                  >
+                    Купить
+                  </Button>
+                  <div class="sidebar-item__price">
+                    <img src="../assets/image/poke_coin.png" alt="Монеты">
+                    <span class="sidebar-item__price-sum">1000</span>
+                  </div>
+                </div>
+              </div>
+              <div class="garden-sidebar__item sidebar-item">
+                <div class="sidebar-item__info">
+                  <p class="sidebar-item__text">Ускорить рост на 2%/час на 2 часа</p>
+                </div>
+                <div class="sidebar-item__action">
+                  <Button 
+                    class="sidebar-item__action-btn"
+                    color="primary"
+                    type="button"
+                  >
+                    Купить
+                  </Button>
+                  <div class="sidebar-item__price">
+                    <img src="../assets/image/poke_coin.png" alt="Монеты">
+                    <span class="sidebar-item__price-sum">2000</span>
+                  </div>
+                </div>
+              </div>
+              <div class="garden-sidebar__item sidebar-item">
+                <div class="sidebar-item__info">
+                  <p class="sidebar-item__text">Ускорить рост на 5%/час на 2 часа</p>
+                </div>
+                <div class="sidebar-item__action">
+                  <Button 
+                    class="sidebar-item__action-btn"
+                    color="primary"
+                    type="button"
+                  >
+                    Купить
+                  </Button>
+                  <div class="sidebar-item__price">
+                    <img src="../assets/image/poke_coin.png" alt="Монеты">
+                    <span class="sidebar-item__price-sum">5000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="garden-sidebar__stats stats-bar">
+              <span class="stats-bar__label">Скорость роста</span>
+              <span class="stats-bar__value">15%/час</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+//import { useUserStore } from '@/stores/useUserStore';
+import { useInventoryStore } from '@/stores/InventoryStore';
+import Cell from './Cell.vue';
+import Button from './Button.vue';
+
+//const userStore = useUserStore();
+const inventStore = useInventoryStore();
+
+const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number}) => {
+  inventStore.moveItem(fromIndex, toIndex);
+};
+
+</script>
 
 <style lang="scss" scoped>
 @import "../assets/scss/_variables.scss";
 
 .garden {
-  height: 250px;
-  background-color: $white;
+  &__container { 
+    min-height: 250px;
+    background-color: $white;
+  }
+  &__body {
+    display: grid;
+    grid-template-columns: 400px auto;
+    gap: 16px;
+    padding: 16px 0;
+  }
 }
+
+.garden-sidebar {
+  display: flex;
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1 1 25%;
+  }
+  &__item {
+    margin-bottom: 12px;
+  }
+}
+
+.garden-inventory {
+  background: $white;
+  max-width: 390px;
+  box-sizing: border-box;
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+}
+
+.sidebar-item {
+  &__text {
+    font-family: $dopFont;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 22px;
+    padding-bottom: 12px;
+  }
+  &__action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    &-btn {
+      width: 30%;
+    }
+  }
+  &__price {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    &-sum {
+      @include design-text;
+      font-size: 1.4rem;
+    }
+  }
+}
+
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex: auto;
+  font-family: $dopFont;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 22px;
+
+}
+
 </style>

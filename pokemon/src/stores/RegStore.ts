@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { lsHashMap } from './lsHashMap';
 import { pokemonService } from '@/services/pokemonService';
 import { Pokemon } from '@/types/pokemon';
+import { InventoryItem } from '@/types/inventoryItem';
 
 export const useRegStore = defineStore('register', () => {
   const loading = ref(false);
@@ -36,6 +37,7 @@ export const useRegStore = defineStore('register', () => {
     const initData = {
       money: 11200,
       pokemons: [] as Pokemon[],
+      inventory: [] as InventoryItem[],
     };
 
     const allPokemons = pokemonService.getAllPokemons();

@@ -3,11 +3,48 @@ import { ref } from 'vue';
 import { lsHashMap } from './lsHashMap';
 import { useAuthStore } from './AuthStore';
 import { Pokemon } from '@/types/pokemon';
+import { InventoryItem } from '@/types/inventoryItem';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
   const pokemons = ref<Pokemon[]>([]);
+  const inventory = ref<InventoryItem[]>([]);
   const isInitial = ref(false);
+
+  let incomeInterval: ReturnType<typeof setInterval> | null = null;
+  const passiveIncomeStep = ref(0);
+
+  const startPassiveIncome = (userLogin: string) => {
+    stopPassiveIncome();
+    const calculateIncomeStep = () => {
+    if (pokemons.value.length > 0) {
+      return pokemons.value.reduce((total, pokemon) => {
+        const pokemonMoney = (pokemon as any).price || 11200;
+        const baseIncome = Math.round(pokemonMoney * 0.1);
+        const currentWeight = typeof pokemon.weight === 'string' ? parseFloat(pokemon.weight) : pokemon.weight;
+        const weightUp = Math.max(0, currentWeight - 12);
+        const weightBonus = Math.round(pokemonMoney * 0.001 * weightUp);
+
+        return total + baseIncome + weightBonus;
+      }, 0);
+    }
+    return Math.round(11200 * 0.1); 
+  };
+
+    passiveIncomeStep.value = calculateIncomeStep();
+
+    incomeInterval = setInterval(() => {
+      if (!isInitial.value) return;
+      money.value += passiveIncomeStep.value;
+    }, 1000); 
+  };
+
+  const stopPassiveIncome = () => {
+    if (incomeInterval) {
+      clearInterval(incomeInterval);
+      incomeInterval = null;
+    }
+  };
 
   const loadUserData = (userLogin: string) => {
     const data = lsHashMap.get(`userData_${userLogin}`);
@@ -15,7 +52,9 @@ export const useUserStore = defineStore('user', () => {
       try {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
+        inventory.value = data.inventory || [];
         isInitial.value = true;
+        startPassiveIncome(userLogin);
       } catch (err) {
         console.error('Не удалось обработать данные:', err);
       }
@@ -30,9 +69,10 @@ export const useUserStore = defineStore('user', () => {
     const userData = {
       money: money.value,
       pokemons: pokemons.value,
+      inventory: inventory.value,
     };
     lsHashMap.set(`userData_${userLogin}`, userData);  
-    const savedData = lsHashMap.get(`userData_${userLogin}`);
+    lsHashMap.flushAllData();
   };
 
   const initNewUser = (resMoney: boolean = true) => {
@@ -40,14 +80,21 @@ export const useUserStore = defineStore('user', () => {
       money.value = 0;
     }
     pokemons.value = [];
+    inventory.value = [];
     isInitial.value = true;
+    const authStore = useAuthStore();
+    if (authStore.user?.login) {
+      startPassiveIncome(authStore.user.login);
+    }
   };
 
-  const setInitialData = (data: { money: number; pokemons: Pokemon[] }, userLogin: string) => {    
+  const setInitialData = (data: { money: number; pokemons: Pokemon[], inventory: InventoryItem[] }, userLogin: string) => {    
     money.value = data.money;
     pokemons.value = [...data.pokemons];
+    inventory.value = [...data.inventory];
     isInitial.value = true;
     saveUserData(userLogin);
+    startPassiveIncome(userLogin);
 
     const checkData = lsHashMap.get(`userData_${userLogin}`);
   };
@@ -74,16 +121,31 @@ export const useUserStore = defineStore('user', () => {
 
   const addPokemon = (pokemon: Pokemon) => {
     pokemons.value.push(pokemon);
+    const authStore = useAuthStore();
+    if (authStore.user?.login) {
+      startPassiveIncome(authStore.user.login);
+    }
   };
 
   const clearPokemons = () => {
     pokemons.value = [];
   };
 
+  const feedPokemonAction = (pokemonId: number, weightUp: number = 1) => {
+    const pokemon = pokemons.value.find(p => p.id === pokemonId);
+    if (pokemon) {
+      const currentWeight = typeof pokemon.weight === 'string' ? parseFloat(pokemon.weight) : pokemon.weight;
+      pokemon.weight = Math.round((currentWeight + weightUp) * 10) / 10;
+
+      const authStore = useAuthStore();
+      if (authStore.user?.login) {
+        startPassiveIncome(authStore.user.login);
+      }
+    }
+  };
+
   const deletePokemon = (pokemonId: number) => {
     try {
-      console.log('🗑️ Удаляем покемона с ID:', pokemonId, 'из данных пользователя');
-      
       const authStore = useAuthStore();
       const currentUser = authStore.user;
       
@@ -103,8 +165,6 @@ export const useUserStore = defineStore('user', () => {
 
       const currentPokemons = currentUserData.pokemons || [];
       const updatedPokemons = currentPokemons.filter((p: Pokemon) => p.id !== pokemonId);
-      
-      console.log('Было покемонов:', currentPokemons.length, 'Стало:', updatedPokemons.length);
 
       const updatedUserData = {
         ...currentUserData,
@@ -117,10 +177,10 @@ export const useUserStore = defineStore('user', () => {
       const aliasKey = `pokemonAlias_${pokemonId}`;
       if (localStorage.getItem(aliasKey)) {
         localStorage.removeItem(aliasKey);
-        console.log('Псевдоним покемона удален');
       }
-
-      console.log('Покемон успешно удален из данных пользователя!');
+      if (authStore.user?.login) {
+        startPassiveIncome(authStore.user.login);
+      }
       return true;
     } catch (err) {
       console.error('Ошибка при удалении покемона:', err);
@@ -131,7 +191,9 @@ export const useUserStore = defineStore('user', () => {
   return {
     money,
     pokemons,
+    inventory,
     isInitial,
+    passiveIncomeStep,
     initNewUser,
     loadUserData,
     saveUserData,
@@ -142,6 +204,8 @@ export const useUserStore = defineStore('user', () => {
     setMoney,
     addPokemon,
     clearPokemons,
-    deletePokemon
+    feedPokemonAction,
+    deletePokemon,
+    stopPassiveIncome,
   };
 });

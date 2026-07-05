@@ -1,0 +1,79 @@
+import { defineStore } from 'pinia';
+import { computed } from 'vue';
+import { useAuthStore } from './AuthStore';
+import { useUserStore } from './useUserStore';
+import { InventoryItem } from '@/types/inventoryItem';
+
+export const useInventoryStore = defineStore('inventory', () => {
+  const authStore = useAuthStore();
+  const userStore = useUserStore();
+  const inventStore = computed(() => userStore.inventory); 
+
+  const findFirstEmptySlot = (): number => {
+    return Array.from({ length: 50 }, (_, i) => i)
+      .findIndex(i => !userStore.inventory.some(item => item.slot === i)); 
+  };
+
+  const buyItem = (shopItem: Omit<InventoryItem, 'slot'>) => {
+    if (userStore.money < shopItem.price) {
+      alert('Недостаточно монет для покупки!');
+      return false;
+    }
+
+    const emptySlot = findFirstEmptySlot();
+    if (emptySlot === -1) {
+      alert('Ваш инвентарь полностью заполнен!');
+      return false;
+    }
+
+    userStore.money -= shopItem.price;
+
+    userStore.inventory.push({
+      ...shopItem,
+      slot: emptySlot
+    } as InventoryItem);
+    
+    const login = authStore.user?.login;
+    if (login) {
+      userStore.saveUserData(login);
+    }
+    return true;
+  };
+
+  const moveItem = (fromIndex: number, toIndex: number) => {
+    const itemToMove = userStore.inventory.find(item => item.slot === fromIndex);
+    if (!itemToMove) return;
+
+    const targetItem = userStore.inventory.find(item => item.slot === toIndex);
+    if (targetItem) {
+      targetItem.slot = fromIndex;
+    }
+    itemToMove.slot = toIndex;
+
+    const login = authStore.user?.login;
+    if (login) {
+      userStore.saveUserData(login);
+    }
+  };
+
+  const removeItemBySlot = (slot: number) => {
+    const index = userStore.inventory.findIndex(item => item.slot === slot);
+    if (index !== -1) {
+      userStore.inventory.splice(index, 1);
+
+      const login = authStore.user?.login;
+      if (login) {
+        userStore.saveUserData(login);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  return {
+    inventStore,
+    buyItem,
+    moveItem,
+    removeItemBySlot
+  };
+});
