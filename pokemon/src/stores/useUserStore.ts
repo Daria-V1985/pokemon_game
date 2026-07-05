@@ -20,11 +20,17 @@ export const useUserStore = defineStore('user', () => {
     if (pokemons.value.length > 0) {
       return pokemons.value.reduce((total, pokemon) => {
         const pokemonMoney = (pokemon as any).price || 11200;
-        return total + Math.round(pokemonMoney * 0.1);
+        const baseIncome = Math.round(pokemonMoney * 0.1);
+        const currentWeight = typeof pokemon.weight === 'string' ? parseFloat(pokemon.weight) : pokemon.weight;
+        const weightUp = Math.max(0, currentWeight - 12);
+        const weightBonus = Math.round(pokemonMoney * 0.001 * weightUp);
+
+        return total + baseIncome + weightBonus;
       }, 0);
     }
     return Math.round(11200 * 0.1); 
   };
+
     passiveIncomeStep.value = calculateIncomeStep();
 
     incomeInterval = setInterval(() => {
@@ -125,6 +131,19 @@ export const useUserStore = defineStore('user', () => {
     pokemons.value = [];
   };
 
+  const feedPokemonAction = (pokemonId: number, weightUp: number = 1) => {
+    const pokemon = pokemons.value.find(p => p.id === pokemonId);
+    if (pokemon) {
+      const currentWeight = typeof pokemon.weight === 'string' ? parseFloat(pokemon.weight) : pokemon.weight;
+      pokemon.weight = Math.round((currentWeight + weightUp) * 10) / 10;
+
+      const authStore = useAuthStore();
+      if (authStore.user?.login) {
+        startPassiveIncome(authStore.user.login);
+      }
+    }
+  };
+
   const deletePokemon = (pokemonId: number) => {
     try {
       const authStore = useAuthStore();
@@ -185,6 +204,7 @@ export const useUserStore = defineStore('user', () => {
     setMoney,
     addPokemon,
     clearPokemons,
+    feedPokemonAction,
     deletePokemon,
     stopPassiveIncome,
   };

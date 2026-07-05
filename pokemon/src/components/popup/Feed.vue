@@ -21,6 +21,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
 import { useInventoryStore } from '@/stores/InventoryStore';
+import { useUserStore } from '@/stores/useUserStore';
 import FeedCard from './FeedCard.vue';
 
 interface Feed {
@@ -31,9 +32,14 @@ interface Feed {
   action: string,
 }
 
+const props = defineProps<{
+  pokemonId: number,
+}>();
+
 const API_URL = 'https://9d6066f5473655c8.mokky.dev/feed';
 const feedCards = ref<Feed[]>([]);
 const inventoryStore = useInventoryStore();
+const userStore = useUserStore();
 
 const loadFeedCards = async (): Promise<void> => {
   try {
@@ -53,9 +59,9 @@ const buyBerries = computed(() => {
   return inventoryStore.inventStore.filter(berry => berry.type === 'berry');
 });
 
-const berryDescription = (berryId: number, fallbackText?: string): string => {
+const berryDescription = (berryId: number): string => {
   const matchedApi = feedCards.value.find(apiCard => apiCard.id === berryId);
-  return matchedApi ? matchedApi.text : (fallbackText || 'Вкусная ягода для вашего покемона');
+  return matchedApi ? matchedApi.text : 'Вкусная ягода для вашего покемона';
 };
 
 const berryAction = (berryId: number): string => {
@@ -63,9 +69,10 @@ const berryAction = (berryId: number): string => {
   return matchedApi ? matchedApi.action : 'Накормить';
 };
 
-const handleFeed = (slotIndex: number) => {
-  console.log(`Инициировано кормление ягодой из точного слота инвентаря: ${slotIndex}`);
-  // Сюда мы добавим логику удаления этой конкретной ягоды
+const handleFeed = (slot: number) => {
+  userStore.feedPokemonAction(props.pokemonId, 1);
+  inventoryStore.removeItemBySlot(slot);
+  console.log(`Покемон #${props.pokemonId} успешно накормлен. Ягода из слота ${slot} удалена.`);
 };
 </script>
 

@@ -16,6 +16,7 @@
             <component 
               :is="currentComponent" 
               :pokemon="pokemon"
+              :pokemonId="props.pokemon?.id || null"
               @updatePokemon="$emit('updatePokemon', $event)"
               @pokemonDeleted="handlePokemonDeleted"
             />

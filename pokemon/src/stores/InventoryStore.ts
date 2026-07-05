@@ -56,9 +56,24 @@ export const useInventoryStore = defineStore('inventory', () => {
     }
   };
 
+  const removeItemBySlot = (slot: number) => {
+    const index = userStore.inventory.findIndex(item => item.slot === slot);
+    if (index !== -1) {
+      userStore.inventory.splice(index, 1);
+
+      const login = authStore.user?.login;
+      if (login) {
+        userStore.saveUserData(login);
+      }
+      return true;
+    }
+    return false;
+  }
+
   return {
     inventStore,
     buyItem,
-    moveItem
+    moveItem,
+    removeItemBySlot
   };
 });
