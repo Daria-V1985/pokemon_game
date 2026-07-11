@@ -11,7 +11,11 @@
               :itemSrc="''"
               :itemAlt="''"
               :itemType="null"
-              @moveItem="onItemMoved"
+              :class="[
+                'grid-cell',
+                { 'grid-cell__active garden-inventory__grid-active': index < gardenStore.gardenSlots }
+              ]"
+              @moveItem="onItemMoved($event, index)"
             />
           </div>
         </div>
@@ -27,6 +31,7 @@
                     class="sidebar-item__action-btn"
                     color="primary"
                     type="button"
+                    @click="handleBuyExtension"
                   >
                     Купить
                   </Button>
@@ -87,14 +92,24 @@
 <script lang="ts" setup>
 //import { useUserStore } from '@/stores/useUserStore';
 import { useInventoryStore } from '@/stores/InventoryStore';
+import { useGardenStore } from '@/stores/gardenStore';
 import Cell from './Cell.vue';
 import Button from './Button.vue';
 
 //const userStore = useUserStore();
 const inventStore = useInventoryStore();
+const gardenStore = useGardenStore();
 
-const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number}) => {
-  inventStore.moveItem(fromIndex, toIndex);
+const handleBuyExtension = () => {
+  gardenStore.buyExtension();
+};
+
+const onItemMoved = (data: { fromIndex: number; toIndex: number }, currentIndex: number) => {
+  if (currentIndex >= gardenStore.gardenSlots) {
+    console.warn('Попытка взаимодействия с заблокированной грядкой');
+    return;
+  }
+  inventStore.moveItem(data.fromIndex, data.toIndex);
 };
 
 </script>
@@ -136,6 +151,14 @@ const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+    pointer-events: none;   
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    &-active {
+      pointer-events: all;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
   }
 }
 

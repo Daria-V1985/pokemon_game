@@ -9,6 +9,7 @@ export const useUserStore = defineStore('user', () => {
   const money = ref(0);
   const pokemons = ref<Pokemon[]>([]);
   const inventory = ref<InventoryItem[]>([]);
+  const gardenSlots = ref(8);
   const isInitial = ref(false);
 
   let incomeInterval: ReturnType<typeof setInterval> | null = null;
@@ -53,6 +54,7 @@ export const useUserStore = defineStore('user', () => {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
         inventory.value = data.inventory || [];
+        gardenSlots.value = data.gardenSlots || 8;
         isInitial.value = true;
         startPassiveIncome(userLogin);
       } catch (err) {
@@ -70,6 +72,7 @@ export const useUserStore = defineStore('user', () => {
       money: money.value,
       pokemons: pokemons.value,
       inventory: inventory.value,
+      gardenSlots: gardenSlots.value,
     };
     lsHashMap.set(`userData_${userLogin}`, userData);  
     lsHashMap.flushAllData();
@@ -81,6 +84,7 @@ export const useUserStore = defineStore('user', () => {
     }
     pokemons.value = [];
     inventory.value = [];
+    gardenSlots.value = 8; 
     isInitial.value = true;
     const authStore = useAuthStore();
     if (authStore.user?.login) {
@@ -92,11 +96,10 @@ export const useUserStore = defineStore('user', () => {
     money.value = data.money;
     pokemons.value = [...data.pokemons];
     inventory.value = [...data.inventory];
+    gardenSlots.value = 8;
     isInitial.value = true;
     saveUserData(userLogin);
     startPassiveIncome(userLogin);
-
-    const checkData = lsHashMap.get(`userData_${userLogin}`);
   };
 
   const setMoney = (amount: number) => {
@@ -140,6 +143,7 @@ export const useUserStore = defineStore('user', () => {
       const authStore = useAuthStore();
       if (authStore.user?.login) {
         startPassiveIncome(authStore.user.login);
+        saveUserData(authStore.user.login);
       }
     }
   };
@@ -193,6 +197,7 @@ export const useUserStore = defineStore('user', () => {
     pokemons,
     inventory,
     isInitial,
+    gardenSlots,
     passiveIncomeStep,
     initNewUser,
     loadUserData,
