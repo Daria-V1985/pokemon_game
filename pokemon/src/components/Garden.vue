@@ -4,19 +4,25 @@
       <div class="garden__body">
         <div class="garden__inventory garden-inventory">
           <div class="garden-inventory__grid">
-            <Cell 
-              v-for="(_, index) in 49"
-              :key="index"
-              :index="index"
-              :itemSrc="''"
-              :itemAlt="''"
-              :itemType="null"
-              :class="[
-                'grid-cell',
-                { 'grid-cell__active garden-inventory__grid-active': index < gardenStore.gardenSlots }
-              ]"
-              @moveItem="onItemMoved($event, index)"
-            />
+            <template v-for="(_, index) in 49" :key="index">
+              <Cell 
+                v-if="!isSlotOverlap(index)"
+                :index="index"
+                :itemSrc="berryInSlot(index) ? require('@/assets/image/small-fruit-1.png') : ''"
+                :itemAlt="'Ягода'"
+                :itemType="berryInSlot(index) ? 'berry' : null"
+                :class="[
+                  'grid-cell',
+                  { 'grid-cell__active garden-inventory__grid--active': index < gardenStore.gardenSlots },
+                  { 'garden-inventory__grid--mega': berryInSlot(index)?.isMega },
+                  { 'garden-inventory__grid--ripe': berryInSlot(index)?.scale === 100 }
+                ]"
+                :style="berryStyle(index)"
+                :draggable="berryInSlot(index)?.scale === 100"
+                @dragstart="handleGardenDragStart($event, index)" 
+                @moveItem="onItemMoved($event, index)"
+              />
+            </template>
           </div>
         </div>
         <div class="garden__sidebar garden-sidebar">
@@ -31,6 +37,7 @@
                     class="sidebar-item__action-btn"
                     color="primary"
                     type="button"
+                    :disabled="userStore?.money < 1000"
                     @click="handleBuyExtension"
                   >
                     Купить
@@ -50,6 +57,7 @@
                     class="sidebar-item__action-btn"
                     color="primary"
                     type="button"
+                    :disabled="userStore?.money < 2000"
                   >
                     Купить
                   </Button>
@@ -68,6 +76,7 @@
                     class="sidebar-item__action-btn"
                     color="primary"
                     type="button"
+                    :disabled="userStore?.money < 5000"
                   >
                     Купить
                   </Button>
@@ -90,32 +99,99 @@
 </template>
 
 <script lang="ts" setup>
-//import { useUserStore } from '@/stores/useUserStore';
-import { useInventoryStore } from '@/stores/InventoryStore';
+import { onMounted } from 'vue';
+import { useUserStore } from '@/stores/useUserStore';
+//import { useInventoryStore } from '@/stores/InventoryStore';
+import { useAuthStore } from '@/stores/AuthStore';
 import { useGardenStore } from '@/stores/gardenStore';
 import Cell from './Cell.vue';
 import Button from './Button.vue';
 
-//const userStore = useUserStore();
-const inventStore = useInventoryStore();
+const authStore = useAuthStore();
+const userStore = useUserStore();
+//const inventStore = useInventoryStore();
 const gardenStore = useGardenStore();
+
+onMounted(() => {
+  if (authStore.user?.login) {
+    gardenStore.loadGardenData(authStore.user.login);
+  }
+});
+
+const berryInSlot = (gardenSlot: number) => {
+  return gardenStore.gardenBerry.find(berry => berry.gardenSlot === gardenSlot);
+};
+
+const isSlotOverlap = (gardenSlot: number): boolean => {
+  const GRID_COLUMNS = 5;
+
+  return gardenStore.gardenBerry.some(berry => {
+    if (!berry.isMega) return false;
+
+    const root = berry.gardenSlot;
+    const isRight = gardenSlot === root + 1;
+    const isBottom = gardenSlot == root + GRID_COLUMNS;
+    const isBottomRight = gardenSlot === root + GRID_COLUMNS + 1;
+
+    return isRight || isBottom || isBottomRight;
+  });
+}
+
+const berryStyle = (slot: number) => {
+  const berry = berryInSlot(slot);
+  if (!berry) return {};
+
+  const maxScaleMulti = berry.isMega ? 2 : 1;
+  const finalScale = (berry.scale / 100) * maxScaleMulti;
+  
+  return {
+    '--berry-scale': finalScale,
+  };
+}
 
 const handleBuyExtension = () => {
   gardenStore.buyExtension();
 };
+
+const handleGardenDragStart = (e: DragEvent, gardenSlot: number) => {
+  const brInSlot = berryInSlot(gardenSlot);
+
+  if (!brInSlot) {
+    e.preventDefault();
+    return;
+  }
+
+  if (brInSlot.scale < 100) {
+    e.preventDefault();
+    console.warn('Ягода еще растет!');
+    return;
+  }
+
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    //const berryId = (brInSlot as any).id || 1;
+    e.dataTransfer.setData('text/plain', `FROM_GARDEN:${gardenSlot}`);
+  }
+}
 
 const onItemMoved = (data: { fromIndex: number; toIndex: number }, currentIndex: number) => {
   if (currentIndex >= gardenStore.gardenSlots) {
     console.warn('Попытка взаимодействия с заблокированной грядкой');
     return;
   }
-  inventStore.moveItem(data.fromIndex, data.toIndex);
+  //inventStore.moveItem(data.fromIndex, data.toIndex);
 };
 
 </script>
 
 <style lang="scss" scoped>
 @import "../assets/scss/_variables.scss";
+
+:deep(.grid-cell__item) {
+  transform: scale(var(--berry-scale, 1));
+  transition: transform 0.5s ease-in-out;
+  transform-origin: bottom center;
+}
 
 .garden {
   &__container { 
@@ -153,11 +229,31 @@ const onItemMoved = (data: { fromIndex: number; toIndex: number }, currentIndex:
     gap: 8px;
     pointer-events: none;   
     transition: opacity 0.2s ease, border-color 0.2s ease;
-    &-active {
+    &--active {
       pointer-events: all;
       transition: all 0.2s ease;
       border: 1px solid transparent;
       cursor: pointer;
+    }
+    &--mega {
+      grid-column: span 2 !important; 
+      grid-row: span 2 !important; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      :deep(.grid-cell__item) {
+        max-width: 80% !important;
+        max-height: 80% !important;
+        transform-origin: center center !important; 
+      }
+    }
+    &--ripe {
+      :deep(.grid-cell__item) {
+        cursor: grab !important;
+      }
+      :deep(.grid-cell__item:active) {
+        cursor: grabbing !important;
+      }
     }
   }
 }

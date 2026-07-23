@@ -4,6 +4,7 @@ import { lsHashMap } from './lsHashMap';
 import { useAuthStore } from './AuthStore';
 import { Pokemon } from '@/types/pokemon';
 import { InventoryItem } from '@/types/inventoryItem';
+import { useGardenStore } from './gardenStore';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
@@ -85,6 +86,8 @@ export const useUserStore = defineStore('user', () => {
     pokemons.value = [];
     inventory.value = [];
     gardenSlots.value = 8; 
+    const gardenStore = useGardenStore();
+    gardenStore.generateRandomBerries();
     isInitial.value = true;
     const authStore = useAuthStore();
     if (authStore.user?.login) {
