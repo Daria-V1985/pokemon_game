@@ -21,6 +21,7 @@
                 :draggable="berryInSlot(index)?.scale === 100"
                 @dragstart="handleGardenDragStart($event, index)" 
                 @moveItem="onItemMoved($event, index)"
+                @click="handleCellClick"
               />
             </template>
           </div>
@@ -57,7 +58,8 @@
                     class="sidebar-item__action-btn"
                     color="primary"
                     type="button"
-                    :disabled="userStore?.money < 2000"
+                    :disabled="userStore?.money < 2000 || gardenStore.isActiveBuff_2 || !gardenStore.hasGrowingBerries"
+                    @click="handleBuySpeedBuff('buff2')" 
                   >
                     Купить
                   </Button>
@@ -76,7 +78,8 @@
                     class="sidebar-item__action-btn"
                     color="primary"
                     type="button"
-                    :disabled="userStore?.money < 5000"
+                    :disabled="userStore?.money < 5000 || gardenStore.isActiveBuff_5 || !gardenStore.hasGrowingBerries"
+                    @click="handleBuySpeedBuff('buff5')"
                   >
                     Купить
                   </Button>
@@ -89,7 +92,7 @@
             </div>
             <div class="garden-sidebar__stats stats-bar">
               <span class="stats-bar__label">Скорость роста</span>
-              <span class="stats-bar__value">15%/час</span>
+              <span class="stats-bar__value">{{ gardenStore.growthSpeedText }}</span>
             </div>
           </div>
         </div>
@@ -153,6 +156,10 @@ const handleBuyExtension = () => {
   gardenStore.buyExtension();
 };
 
+const handleBuySpeedBuff = (buffType: 'buff2' | 'buff5') => {
+  gardenStore.buySpeedBuff(buffType);
+};
+
 const handleGardenDragStart = (e: DragEvent, gardenSlot: number) => {
   const brInSlot = berryInSlot(gardenSlot);
 
@@ -180,6 +187,12 @@ const onItemMoved = (data: { fromIndex: number; toIndex: number }, currentIndex:
     return;
   }
   //inventStore.moveItem(data.fromIndex, data.toIndex);
+};
+
+const handleCellClick = (index: number) => {
+  if (index >= gardenStore.gardenSlots) return; 
+  
+  gardenStore.extractBerryFromGarden(index); 
 };
 
 </script>
