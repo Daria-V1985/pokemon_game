@@ -4,4 +4,5 @@ export interface gardenBerry {
   scale: number,    
   timeUpdate: number,
   isMega?: boolean, 
+  waveSpawned?: boolean;
 }

@@ -4,15 +4,24 @@
       <div class="inventory__body">
         <div class="inventory__title">Inventory</div>
         <div class="inventory__grid">
-          <Cell 
-            v-for="(_, index) in 50"
-            :key="index"
-            :index="index"
-            :itemSrc="itemInSlot(index)?.image || ''"
-            :itemAlt="itemInSlot(index)?.name || ''"
-            :itemType="itemInSlot(index)?.type || null"
-            @moveItem="onItemMoved"
-          />
+          <template v-for="(_, index) in 50" :key="index">
+            <div
+              v-if="!isInventSlotOverlap(index)"
+              :class="[
+                'inventory-grid__wrapper',
+                { 'inventory-grid__mega': itemInSlot(index)?.isMega }
+              ]"
+            >
+              <Cell 
+                :index="index"
+                :itemSrc="itemInSlot(index)?.image || ''"
+                :itemAlt="itemInSlot(index)?.name || ''"
+                :itemType="itemInSlot(index)?.type || null"
+                class='inventory-grid__cell'
+                @moveItem="onItemMoved"
+              />
+            </div>
+          </template>
           <div class="inventory__coins-bar coins-bar">
             <div class="coins-bar__balance">
               <span class="coins-bar__icon">
@@ -39,6 +48,21 @@ const itemInSlot = (slot: number) => {
   return userStore.inventory.find(item => item.slot === slot);
 };
 
+const isInventSlotOverlap = (inventSlot: number): boolean => {
+  const INVENTORY_COLUMNS = 7;
+
+  return userStore.inventory.some(item => {
+    if (!item.isMega) return false;
+
+    const root = item.slot;
+    const isRight = inventSlot === root + 1;
+    const isBottom = inventSlot == root + INVENTORY_COLUMNS;
+    const isBottomRight = inventSlot === root + INVENTORY_COLUMNS + 1;
+
+    return isRight || isBottom || isBottomRight;
+  });
+}
+
 const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number}) => {
   inventStore.moveItem(fromIndex, toIndex);
 };
@@ -46,6 +70,13 @@ const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number
 
 <style lang="scss" scoped>
 @import "../assets/scss/_variables.scss";
+
+:deep(.grid-cell__item) {
+  max-width: 80% !important;
+  max-height: 80% !important;
+  transform: scale(1) !important; 
+  transform-origin: center center !important; 
+}
 
 .inventory {
   &__body {
@@ -64,6 +95,24 @@ const onItemMoved = ({ fromIndex, toIndex }: {fromIndex: number; toIndex: number
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
+  }
+}
+
+.inventory-grid {
+  &__wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  &__cell {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  &__mega {
+    grid-column: span 2 !important; 
+    grid-row: span 2 !important;    
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 }
 

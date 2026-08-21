@@ -3,26 +3,30 @@
     <div class="garden__container">
       <div class="garden__body">
         <div class="garden__inventory garden-inventory">
-          <div class="garden-inventory__grid">
+          <div class="garden-inventory__grid garden-grid">
             <template v-for="(_, index) in 49" :key="index">
-              <Cell 
-                v-if="!isSlotOverlap(index)"
-                :index="index"
-                :itemSrc="berryInSlot(index) ? require('@/assets/image/small-fruit-1.png') : ''"
-                :itemAlt="'Ягода'"
-                :itemType="berryInSlot(index) ? 'berry' : null"
+              <div
+                v-if="!isGardenSlotOverlap(index)"
                 :class="[
-                  'grid-cell',
-                  { 'grid-cell__active garden-inventory__grid--active': index < gardenStore.gardenSlots },
-                  { 'garden-inventory__grid--mega': berryInSlot(index)?.isMega },
-                  { 'garden-inventory__grid--ripe': berryInSlot(index)?.scale === 100 }
-                ]"
-                :style="berryStyle(index)"
-                :draggable="berryInSlot(index)?.scale === 100"
-                @dragstart="handleGardenDragStart($event, index)" 
-                @moveItem="onItemMoved($event, index)"
-                @click="handleCellClick"
-              />
+                    'garden-grid__wrapper',
+                    { 'garden-grid__wrapper--active': index < gardenStore.gardenSlots },
+                    { 'garden-grid__mega': berryInSlot(index)?.isMega },
+                    { 'garden-grid__ripe': berryInSlot(index)?.scale === 100 }
+                  ]"
+                  :draggable="berryInSlot(index)?.scale === 100"
+                  @dragstart="handleGardenDragStart($event, index)"
+                  @click="handleCellClick(index)" 
+              >
+                <Cell 
+                  :index="index"
+                  :itemSrc="berryInSlot(index) ? require('@/assets/image/small-fruit-1.png') : ''"
+                  :itemAlt="'Ягода'"
+                  :itemType="berryInSlot(index) ? 'berry' : null"
+                  class="garden-grid__cell"
+                  :style="berryStyle(index)"
+                  @moveItem="onItemMoved($event, index)"
+                />
+              </div>
             </template>
           </div>
         </div>
@@ -104,7 +108,6 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
 import { useUserStore } from '@/stores/useUserStore';
-//import { useInventoryStore } from '@/stores/InventoryStore';
 import { useAuthStore } from '@/stores/AuthStore';
 import { useGardenStore } from '@/stores/gardenStore';
 import Cell from './Cell.vue';
@@ -112,7 +115,6 @@ import Button from './Button.vue';
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
-//const inventStore = useInventoryStore();
 const gardenStore = useGardenStore();
 
 onMounted(() => {
@@ -125,8 +127,8 @@ const berryInSlot = (gardenSlot: number) => {
   return gardenStore.gardenBerry.find(berry => berry.gardenSlot === gardenSlot);
 };
 
-const isSlotOverlap = (gardenSlot: number): boolean => {
-  const GRID_COLUMNS = 5;
+const isGardenSlotOverlap = (gardenSlot: number): boolean => {
+  const GRID_COLUMNS = 7;
 
   return gardenStore.gardenBerry.some(berry => {
     if (!berry.isMega) return false;
@@ -176,7 +178,6 @@ const handleGardenDragStart = (e: DragEvent, gardenSlot: number) => {
 
   if (e.dataTransfer) {
     e.dataTransfer.effectAllowed = 'move';
-    //const berryId = (brInSlot as any).id || 1;
     e.dataTransfer.setData('text/plain', `FROM_GARDEN:${gardenSlot}`);
   }
 }
@@ -186,13 +187,11 @@ const onItemMoved = (data: { fromIndex: number; toIndex: number }, currentIndex:
     console.warn('Попытка взаимодействия с заблокированной грядкой');
     return;
   }
-  //inventStore.moveItem(data.fromIndex, data.toIndex);
 };
 
-const handleCellClick = (index: number) => {
-  if (index >= gardenStore.gardenSlots) return; 
-  
-  gardenStore.extractBerryFromGarden(index); 
+const handleCellClick = (gardenSlotIndex: number) => {
+  if (gardenSlotIndex >= gardenStore.gardenSlots) return; 
+  gardenStore.extractBerryFromGarden(gardenSlotIndex); 
 };
 
 </script>
@@ -219,6 +218,54 @@ const handleCellClick = (index: number) => {
   }
 }
 
+.garden-grid {
+  &__wrapper {
+    opacity: 0.3;           
+    pointer-events: none;    
+    transition: opacity 0.2s ease;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    &--active {
+      opacity: 1 !important;
+      pointer-events: all;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    :deep(.grid-cell) {
+      opacity: 1 !important;
+    }
+  }
+  &__cell {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  &__mega {
+    grid-column: span 2 !important; 
+    grid-row: span 2 !important; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .garden-grid__cell {
+      max-width: 100% !important;
+      max-height: 100% !important;
+      transform-origin: center center !important; 
+    }
+    :deep(.grid-cell__item) {
+      max-width: 80% !important;
+      max-height: 80% !important;
+      transform-origin: center center !important; 
+    }
+  }
+  &__ripe {
+    :deep(.grid-cell__item) {
+      cursor: grab !important;
+    }
+    :deep(.grid-cell__item:active) {
+      cursor: grabbing !important;
+    }
+  }
+}
+
 .garden-sidebar {
   display: flex;
   &__wrapper {
@@ -240,34 +287,7 @@ const handleCellClick = (index: number) => {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
-    pointer-events: none;   
     transition: opacity 0.2s ease, border-color 0.2s ease;
-    &--active {
-      pointer-events: all;
-      transition: all 0.2s ease;
-      border: 1px solid transparent;
-      cursor: pointer;
-    }
-    &--mega {
-      grid-column: span 2 !important; 
-      grid-row: span 2 !important; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      :deep(.grid-cell__item) {
-        max-width: 80% !important;
-        max-height: 80% !important;
-        transform-origin: center center !important; 
-      }
-    }
-    &--ripe {
-      :deep(.grid-cell__item) {
-        cursor: grab !important;
-      }
-      :deep(.grid-cell__item:active) {
-        cursor: grabbing !important;
-      }
-    }
   }
 }
 
