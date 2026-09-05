@@ -107,9 +107,9 @@ export const useGardenStore = defineStore('garden', () => {
     const isMega = !!berry.isMega;
 
     if (isMega) {
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < userStore.inventorySlots; i++) {
         if ((i % INVENTORY_COLUMNS) === INVENTORY_COLUMNS - 1) continue;
-        if (i + INVENTORY_COLUMNS >= 50) continue;
+        if (i + INVENTORY_COLUMNS >= userStore.inventorySlots) continue;
 
         const slotRight = i + 1;
         const slotBottom = i + INVENTORY_COLUMNS;
@@ -126,7 +126,7 @@ export const useGardenStore = defineStore('garden', () => {
         }
       }
     } else {
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < userStore.inventorySlots; i++) {
         if (!blockedSlotsInInventory.has(i)) {
           targetInventSlot = i;
           break;

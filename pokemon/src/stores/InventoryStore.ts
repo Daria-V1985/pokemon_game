@@ -10,8 +10,24 @@ export const useInventoryStore = defineStore('inventory', () => {
   const inventStore = computed(() => userStore.inventory); 
 
   const findFirstEmptySlot = (): number => {
-    return Array.from({ length: 50 }, (_, i) => i)
-      .findIndex(i => !userStore.inventory.some(item => item.slot === i)); 
+    const INVENTORY_COLUMNS = 7;
+    const blockedSlots = new Set<number>();
+    
+    userStore.inventory.forEach(item => {
+      blockedSlots.add(item.slot);
+      if (item.isMega) {
+        blockedSlots.add(item.slot + 1);
+        blockedSlots.add(item.slot + INVENTORY_COLUMNS);
+        blockedSlots.add(item.slot + INVENTORY_COLUMNS + 1);
+      }
+    });
+
+    for (let i = 0; i < userStore.inventorySlots; i++) {
+      if (!blockedSlots.has(i)) {
+        return i; 
+      }
+    }
+    return -1;
   };
 
   const buyItem = (shopItem: Omit<InventoryItem, 'slot'>) => {
@@ -22,7 +38,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     const emptySlot = findFirstEmptySlot();
     if (emptySlot === -1) {
-      alert('Ваш инвентарь полностью заполнен!');
+      alert('В вашем рюкзаке недостаточно открытого места! Купите расширение инвентаря');
       return false;
     }
 
@@ -41,6 +57,11 @@ export const useInventoryStore = defineStore('inventory', () => {
   };
 
   const moveItem = (fromIndex: number, toIndex: number) => {
+    if (toIndex >= userStore.inventorySlots) {
+      console.warn('Попытка перемещения предмета в закрытую зону инвентаря');
+      return;
+    }
+
     const itemToMove = userStore.inventory.find(item => item.slot === fromIndex);
     if (!itemToMove) return;
 
@@ -68,12 +89,39 @@ export const useInventoryStore = defineStore('inventory', () => {
       return true;
     }
     return false;
+  };
+
+  const buyInventorySlots = (): boolean => {
+    const EXTENSION_PRICE = 1000;
+
+    if (userStore.money < EXTENSION_PRICE) {
+      alert('Недостаточно монет для расширения инвентаря!');
+      return false;
+    }
+
+    if (userStore.inventorySlots >= 50) {
+      alert('Ваш рюкзак уже расширен до максимального размера (50 ячеек)!');
+      return false;
+    }
+
+    userStore.money -= EXTENSION_PRICE;
+    userStore.inventorySlots += 5;
+
+    const login = authStore.user?.login;
+    if (login) {
+      userStore.saveUserData(login);
+    }
+
+    console.log(`Рюкзак успешно расширен! Текущий лимит ячеек: ${userStore.inventorySlots}`);
+    return true;
   }
 
   return {
     inventStore,
     buyItem,
     moveItem,
-    removeItemBySlot
+    removeItemBySlot,
+    findFirstEmptySlot,
+    buyInventorySlots
   };
 });

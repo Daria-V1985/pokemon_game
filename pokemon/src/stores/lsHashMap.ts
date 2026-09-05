@@ -39,13 +39,23 @@ class LSHashMap {
     for (let i = 0; i < localStorage.length; i++) {
       const id = localStorage.key(i);
       if (id) {
+        if (id === 'i18nextLng' || id === 'loglevel') {
+          const rawValue = localStorage.getItem(id);
+          this.cache.set(id, rawValue); 
+          continue;
+        }
+
         try {
           const value = localStorage.getItem(id);
           if (value) {
-            this.cache.set(id, JSON.parse(value));
+            if (value.startsWith('{') || value.startsWith('[')) {
+              this.cache.set(id, JSON.parse(value));
+            } else {
+              this.cache.set(id, value);
+            }
           }
         } catch (err) {
-          console.warn(`Не удалось обработать данные: ${id}`, err);
+          console.debug(`Пропущена сторонняя строка в LocalStorage: ${id}`);
         }
       }
     }
@@ -61,11 +71,16 @@ class LSHashMap {
     const data = localStorage.getItem(id);
     if (data) {
       try {
-        const dataValue = JSON.parse(data);
-        this.cache.set(id, dataValue);
-        return dataValue;
+        if (data.startsWith('{') || data.startsWith('[')) {
+          const dataValue = JSON.parse(data);
+          this.cache.set(id, dataValue);
+          return dataValue;
+        } else {
+          this.cache.set(id, data);
+          return data;
+        }
       } catch (err) {
-        return null;
+        return data;
       }
     }
 
@@ -88,7 +103,10 @@ class LSHashMap {
   flush(id: string) {
     if (this.cache.has(id)) {
       try {
-        localStorage.setItem(id, JSON.stringify(this.cache.get(id)));
+        const valueToSave = this.cache.get(id);
+        const stringified = typeof valueToSave === 'object' ? JSON.stringify(valueToSave) : valueToSave;
+
+        localStorage.setItem(id, stringified);
         this.pendingWrites.delete(id);
       } catch (err) {
         console.warn(`Не удалось обработать данные: ${id}`, err);
