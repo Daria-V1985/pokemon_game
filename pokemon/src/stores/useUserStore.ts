@@ -4,11 +4,13 @@ import { lsHashMap } from './lsHashMap';
 import { useAuthStore } from './AuthStore';
 import { Pokemon } from '@/types/pokemon';
 import { InventoryItem } from '@/types/inventoryItem';
+import { useGardenStore } from './gardenStore';
 
 export const useUserStore = defineStore('user', () => {
   const money = ref(0);
   const pokemons = ref<Pokemon[]>([]);
   const inventory = ref<InventoryItem[]>([]);
+  const inventorySlots = ref(15);
   const gardenSlots = ref(8);
   const isInitial = ref(false);
 
@@ -54,6 +56,7 @@ export const useUserStore = defineStore('user', () => {
         money.value = data.money || 0;
         pokemons.value = data.pokemons || [];
         inventory.value = data.inventory || [];
+        inventorySlots.value = data.inventorySlots || 15;
         gardenSlots.value = data.gardenSlots || 8;
         isInitial.value = true;
         startPassiveIncome(userLogin);
@@ -72,6 +75,7 @@ export const useUserStore = defineStore('user', () => {
       money: money.value,
       pokemons: pokemons.value,
       inventory: inventory.value,
+      inventorySlots: inventorySlots.value,
       gardenSlots: gardenSlots.value,
     };
     lsHashMap.set(`userData_${userLogin}`, userData);  
@@ -84,7 +88,10 @@ export const useUserStore = defineStore('user', () => {
     }
     pokemons.value = [];
     inventory.value = [];
+    inventorySlots.value = 15;
     gardenSlots.value = 8; 
+    const gardenStore = useGardenStore();
+    gardenStore.generateRandomBerries();
     isInitial.value = true;
     const authStore = useAuthStore();
     if (authStore.user?.login) {
@@ -96,6 +103,7 @@ export const useUserStore = defineStore('user', () => {
     money.value = data.money;
     pokemons.value = [...data.pokemons];
     inventory.value = [...data.inventory];
+    inventorySlots.value = 15;
     gardenSlots.value = 8;
     isInitial.value = true;
     saveUserData(userLogin);
@@ -196,6 +204,7 @@ export const useUserStore = defineStore('user', () => {
     money,
     pokemons,
     inventory,
+    inventorySlots,
     isInitial,
     gardenSlots,
     passiveIncomeStep,

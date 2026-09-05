@@ -123,15 +123,18 @@ const handlePokemonDeleted = (pokemonId: number) => {
   pointer-events: auto;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 15px 20px;
+  box-sizing: border-box;
   &__inner {
     min-width: 572px;
-    display: table;
     padding: 15px 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto;
+    margin: auto;
+    pointer-events: none;
   }
   &__body {
     font-family: $mainFont;
@@ -141,6 +144,7 @@ const handlePokemonDeleted = (pokemonId: number) => {
     width: 100%;
     border-radius: 4px;
     cursor: default;
+    pointer-events: auto;
   }
   &__container {
     padding: 10px 24px;

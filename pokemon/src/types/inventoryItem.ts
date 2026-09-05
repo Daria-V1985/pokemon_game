@@ -5,4 +5,5 @@ export interface InventoryItem {
   image: string;
   price: number;
   slot: number;
+  isMega?: boolean; 
 }
